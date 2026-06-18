@@ -22,7 +22,7 @@ html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monos
 .sc.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
 .radar-wrap{flex:1;position:relative;background:#000;overflow:hidden}
 canvas{display:block}
-.controls{background:#030d03;border-top:1px solid #0f2a0f;padding:4px 8px;display:grid;grid-template-columns:repeat(5,1fr) auto;gap:6px 10px;align-items:center;flex-shrink:0}
+.controls{background:#030d03;border-top:1px solid #0f2a0f;padding:4px 8px;display:grid;grid-template-columns:repeat(6,1fr) auto;gap:6px 8px;align-items:center;flex-shrink:0}
 .sl{display:flex;flex-direction:column;gap:1px}
 .sl-lbl{display:flex;justify-content:space-between;font-size:9px;color:#336633}
 .sl-lbl span{color:#ffff00;font-weight:bold}
@@ -99,6 +99,12 @@ canvas{display:block}
         <button class="sc" onclick="sc('frente')">Frente a frente</button>
         <button class="sc" onclick="sc('alcance')">Alcance</button>
         <button class="sc" onclick="sc('seguro')">Paso seguro</button>
+      </div>
+      <div class="sc-bar" style="border-top:1px solid #0f2a0f">
+        <label>ORIENTACION:</label>
+        <button class="sc ori-btn on" id="ori-north" onclick="setOri('north')">NORTH UP</button>
+        <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
+        <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
           <label style="font-size:9px;color:#336633">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
@@ -115,6 +121,7 @@ canvas{display:block}
           <span style="font-size:8px;color:#336633">NM</span>
         </div>
       </div>
+
 
       <div class="radar-wrap" id="radar-wrap">
         <canvas id="rc"></canvas>
@@ -136,6 +143,10 @@ canvas{display:block}
         <div class="sl">
           <div class="sl-lbl">Distancia (RNG) <span id="vdst">3.0 NM</span></div>
           <input type="range" id="dst" min="0.2" max="24" step="0.1" value="3" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Rumbo propio (OS HDG) <span id="voshdg">000°</span></div>
+          <input type="range" id="oshdg" min="0" max="359" step="1" value="0" oninput="upd()">
         </div>
         <div class="sl">
           <div class="sl-lbl">Vel. propio OS <span id="vospd">10 kn</span></div>
@@ -225,7 +236,7 @@ canvas{display:block}
 <script>
 const cv=document.getElementById('rc');
 const ctx=cv.getContext('2d');
-let RNG=4, VECMIN=6, MODE='normal', revealed=false;
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north';
 let alertClass='ab-hidden', alertMsg='—';
 
 function d2r(d){return d*Math.PI/180}
@@ -233,22 +244,30 @@ function gv(id){return +document.getElementById(id).value}
 function sv(id,v){document.getElementById(id).value=v}
 
 const SCEN={
-  maersk:{hdg:100,spd:11,brg:60,dst:3,ospd:10,name:'MAERSK LABERINTO',mmsi:'219542000',lbl:'AIS C'},
-  ladyj:{hdg:137,spd:12,brg:1,dst:4.4,ospd:10,name:'LADY J',mmsi:'636022859',lbl:'AIS A'},
-  cruce:{hdg:260,spd:14,brg:50,dst:5,ospd:12,name:'BLANCO TGT-01',mmsi:'—',lbl:'TT MAN'},
-  frente:{hdg:178,spd:14,brg:2,dst:7,ospd:10,name:'BLANCO TGT-02',mmsi:'—',lbl:'TT MAN'},
-  alcance:{hdg:5,spd:7,brg:170,dst:3,ospd:14,name:'BLANCO TGT-03',mmsi:'—',lbl:'TT MAN'},
-  seguro:{hdg:80,spd:10,brg:40,dst:9,ospd:10,name:'BLANCO TGT-04',mmsi:'—',lbl:'TT MAN'}
+  maersk:{hdg:100,spd:11,brg:60,dst:3,ospd:10,oshdg:0,name:'MAERSK LABERINTO',mmsi:'219542000',lbl:'AIS C'},
+  ladyj:{hdg:137,spd:12,brg:1,dst:4.4,ospd:10,oshdg:0,name:'LADY J',mmsi:'636022859',lbl:'AIS A'},
+  cruce:{hdg:260,spd:14,brg:50,dst:5,ospd:12,oshdg:0,name:'BLANCO TGT-01',mmsi:'—',lbl:'TT MAN'},
+  frente:{hdg:178,spd:14,brg:2,dst:7,ospd:10,oshdg:0,name:'BLANCO TGT-02',mmsi:'—',lbl:'TT MAN'},
+  alcance:{hdg:5,spd:7,brg:170,dst:3,ospd:14,oshdg:0,name:'BLANCO TGT-03',mmsi:'—',lbl:'TT MAN'},
+  seguro:{hdg:80,spd:10,brg:40,dst:9,ospd:10,oshdg:0,name:'BLANCO TGT-04',mmsi:'—',lbl:'TT MAN'}
 };
 
 function sc(name){
-  document.querySelectorAll('.sc').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.sc:not(.ori-btn)').forEach(b=>b.classList.remove('on'));
   event.target.classList.add('on');
   const s=SCEN[name];
-  sv('hdg',s.hdg);sv('spd',s.spd);sv('brg',s.brg);sv('dst',s.dst);sv('ospd',s.ospd);
+  sv('hdg',s.hdg);sv('spd',s.spd);sv('brg',s.brg);sv('dst',s.dst);sv('ospd',s.ospd);sv('oshdg',s.oshdg);
   document.getElementById('tgt-label').textContent=s.lbl+' — MMSI '+s.mmsi;
   document.getElementById('tgt-name').textContent=s.name;
   revealed=false;
+  upd();
+}
+
+function setOri(mode){
+  ORI=mode;
+  document.getElementById('ori-north').classList.toggle('on',mode==='north');
+  document.getElementById('ori-course').classList.toggle('on',mode==='course');
+  document.getElementById('ori-head').classList.toggle('on',mode==='head');
   upd();
 }
 
@@ -303,7 +322,8 @@ function fmt(m){
 }
 
 function upd(){
-  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst'),ospd=gv('ospd');
+  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst'),ospd=gv('ospd'),oshdg=gv('oshdg');
+  document.getElementById('voshdg').textContent=String(oshdg).padStart(3,'0')+'°';
   document.getElementById('vhdg').textContent=String(hdg).padStart(3,'0')+'°';
   document.getElementById('vspd').textContent=spd+' kn';
   document.getElementById('vbrg').textContent=String(brg).padStart(3,'0')+'°';
@@ -315,7 +335,7 @@ function upd(){
   document.getElementById('si-hdg').textContent=String(hdg).padStart(3,'0')+'°';
 
   const tx=dst*Math.sin(d2r(brg)), ty=dst*Math.cos(d2r(brg));
-  const ovx=ospd*Math.sin(d2r(0)), ovy=ospd*Math.cos(d2r(0));
+  const ovx=ospd*Math.sin(d2r(oshdg)), ovy=ospd*Math.cos(d2r(oshdg));
   const tvx=spd*Math.sin(d2r(hdg)), tvy=spd*Math.cos(d2r(hdg));
   const rvx=tvx-ovx, rvy=tvy-ovy;
   const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
@@ -371,10 +391,10 @@ function upd(){
     document.getElementById('reveal-hint').textContent='';
   }
 
-  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg);
+  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg);
 }
 
-function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
+function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg){
   const wrap=document.getElementById('radar-wrap');
   const W=wrap.clientWidth, H=wrap.clientHeight;
   cv.width=W; cv.height=H;
@@ -383,14 +403,32 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
 
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
+  // Orientation: rotate the whole picture so that North-Up, Course-Up or Head-Up is on top.
+  // screenRot = the true bearing that should point "up" on screen.
+  let screenRot = 0;
+  if(ORI==='course' || ORI==='head') screenRot = oshdg;
+  ctx.save();
+  ctx.translate(CX,CY);
+  ctx.rotate(d2r(-screenRot));
+  ctx.translate(-CX,-CY);
+
+  // Draw upright text regardless of canvas rotation
+  function txt(x,y,str,font,color){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(d2r(screenRot));
+    ctx.fillStyle=color; ctx.font=font;
+    ctx.fillText(str,0,0);
+    ctx.restore();
+  }
+
   // rings
   const rings=[0.25,0.5,1,2,3,4,6,8,10,12,16,24].filter(r=>r<=RNG&&r>0);
   ctx.lineWidth=0.5;
   rings.forEach(r=>{
     ctx.strokeStyle=r===RNG?'#1a5a2a':'#0a2a0a';
     ctx.beginPath(); ctx.arc(CX,CY,r*PX,0,Math.PI*2); ctx.stroke();
-    ctx.fillStyle='#1a5a2a'; ctx.font='9px Courier New';
-    ctx.fillText(r+' NM',CX+r*PX+2,CY-2);
+    txt(CX+r*PX+2,CY-2,r+' NM','9px Courier New','#1a5a2a');
   });
 
   // bearing lines
@@ -398,9 +436,8 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
   for(let a=0;a<360;a+=30){
     const rad=d2r(a), rr=RNG*PX;
     ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(CX+Math.sin(rad)*rr,CY-Math.cos(rad)*rr); ctx.stroke();
-    ctx.fillStyle='#1a6a3a'; ctx.font='9px Courier New';
     const lx=CX+Math.sin(rad)*rr*0.94, ly=CY-Math.cos(rad)*rr*0.94;
-    ctx.fillText(String(a).padStart(3,'0'),lx-10,ly+4);
+    txt(lx-10,ly+4,String(a).padStart(3,'0'),'9px Courier New','#1a6a3a');
   }
   ctx.setLineDash([]);
 
@@ -417,8 +454,7 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
     if(MODE==='normal'||revealed){
       ctx.fillStyle='#ff3333';
       ctx.beginPath(); ctx.arc(cpx,cpy,5,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='#ff8888'; ctx.font='bold 9px Courier New';
-      ctx.fillText('CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—'),cpx+7,cpy-3);
+      txt(cpx+7,cpy-3,'CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—'),'bold 9px Courier New','#ff8888');
     }
   }
 
@@ -427,7 +463,7 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
     const [bcx,bcy]=ts(0,bcr);
     ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
-    ctx.fillStyle='#44ff88'; ctx.font='bold 9px Courier New'; ctx.fillText('BCR',bcx+8,bcy+4);
+    txt(bcx+8,bcy+4,'BCR','bold 9px Courier New','#44ff88');
     const bh=bct/60;
     const [tx0s,ty0s]=ts(tx,ty);
     const [bpx,bpy]=ts(tx+rvx*bh,ty+rvy*bh);
@@ -463,7 +499,7 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
   ctx.strokeStyle='#000'; ctx.lineWidth=2;
   const thrad=d2r(hdg);
   ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tx0s+Math.sin(thrad)*10,ty0s-Math.cos(thrad)*10); ctx.stroke();
-  ctx.fillStyle='#ffff00'; ctx.font='bold 9px Courier New'; ctx.fillText('TGT',tx0s+9,ty0s-8);
+  txt(tx0s+9,ty0s-8,'TGT','bold 9px Courier New','#ffff00');
 
   // OS true vector (dashed green)
   const [ovex,ovey]=ts(ovx*proj,ovy*proj);
@@ -471,16 +507,30 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
   ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
   ctx.setLineDash([]);
 
-  // OS dot (triangle ship)
+  // OS dot (triangle ship, rotated by own heading)
+  const osr=d2r(oshdg);
+  function rot(px,py){return [CX+px*Math.cos(osr)+py*Math.sin(osr), CY+(-px*Math.sin(osr)+py*Math.cos(osr))];}
   ctx.fillStyle='#00ff41';
   ctx.beginPath();
-  ctx.moveTo(CX,CY-9); ctx.lineTo(CX-5,CY+5); ctx.lineTo(CX+5,CY+5); ctx.closePath(); ctx.fill();
-  ctx.fillStyle='#00ff41'; ctx.font='bold 9px Courier New'; ctx.fillText('OS',CX-7,CY+16);
+  const [p1x,p1y]=rot(0,-9), [p2x,p2y]=rot(-5,5), [p3x,p3y]=rot(5,5);
+  ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.lineTo(p3x,p3y); ctx.closePath(); ctx.fill();
+  txt(CX-7,CY+16,'OS','bold 9px Courier New','#00ff41');
 
-  // compass labels
-  ctx.fillStyle='#2a6a3a'; ctx.font='bold 10px Courier New';
-  ctx.fillText('N',CX-4,12); ctx.fillText('S',CX-3,H-4);
-  ctx.fillText('E',W-14,CY+4); ctx.fillText('W',4,CY+4);
+  // compass labels (rotate position with the picture, text stays upright)
+  txt(CX-4,12,'N','bold 10px Courier New','#2a6a3a');
+  txt(CX-3,H-4,'S','bold 10px Courier New','#2a6a3a');
+  txt(W-14,CY+4,'E','bold 10px Courier New','#2a6a3a');
+  txt(4,CY+4,'W','bold 10px Courier New','#2a6a3a');
+
+  // restore rotation before fixed screen overlays (orientation badge, legend)
+  ctx.restore();
+
+  // orientation mode badge, top-left of radar
+  const oriLabel = ORI==='north'?'NORTH UP':(ORI==='course'?'COURSE UP':'HEAD UP');
+  ctx.fillStyle='#0a2a0a'; ctx.fillRect(6,6,76,16);
+  ctx.strokeStyle='#1a5a2a'; ctx.lineWidth=1; ctx.strokeRect(6,6,76,16);
+  ctx.fillStyle='#44ff88'; ctx.font='bold 9px Courier New';
+  ctx.fillText(oriLabel,12,18);
 
   // legend bottom left
   const leg=[
