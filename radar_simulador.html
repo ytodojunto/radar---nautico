@@ -33,11 +33,11 @@ canvas{display:block}
 .mode-btn.on{background:#1a1a00;border-color:#ffff00;color:#ffff00;font-weight:bold}
 .sidebar{width:200px;background:#050f05;border-left:1px solid #1a4a1a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .tgt-block{border-bottom:1px solid #0f2a0f;padding:5px 8px;flex-shrink:0}
-.tgt-label{color:#00ccff;font-size:9px;font-weight:bold;letter-spacing:1px;margin-bottom:1px}
-.tgt-name{color:#ffff00;font-size:10px;font-weight:bold;margin-bottom:3px}
-.tgt-row{display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px}
+.tgt-label{color:#00ccff;font-size:10px;font-weight:bold;letter-spacing:1px;margin-bottom:2px}
+.tgt-name{color:#ffff00;font-size:12px;font-weight:bold;margin-bottom:5px}
+.tgt-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
 .tgt-row .lbl{color:#336633}
-.tgt-row .val{color:#00ff41;font-weight:bold}
+.tgt-row .val{color:#00ff41;font-weight:bold;font-size:13px}
 .tgt-row .val.danger{color:#ff3333}
 .tgt-row .val.warn{color:#ffaa00}
 .tgt-row .val.ok{color:#44ff88}
@@ -46,9 +46,9 @@ canvas{display:block}
 .mc{background:#030d03;border:1px solid #0f2a0f;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
 .mc:hover{border-color:#336633}
 .mc.sel{border-color:#00ff41}
-.mc .mk{font-size:8px;color:#336633;letter-spacing:.5px}
-.mc .mv{font-size:18px;font-weight:bold;line-height:1;margin:1px 0}
-.mc .mu{font-size:8px;color:#336633}
+.mc .mk{font-size:9px;color:#336633;letter-spacing:.5px}
+.mc .mv{font-size:22px;font-weight:bold;line-height:1;margin:1px 0}
+.mc .mu{font-size:9px;color:#336633}
 .mc .mdef{font-size:8px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #0f2a0f;display:none}
 .mc.sel .mdef{display:block}
 .cpa-c{color:#ff3333}.tcpa-c{color:#44aaff}.bcr-c{color:#44ff88}.bct-c{color:#ffaa00}
@@ -352,10 +352,6 @@ function upd(){
   document.getElementById('si-rng').textContent=dst.toFixed(3)+' NM';
   document.getElementById('si-stw').textContent=spd+' kn';
   document.getElementById('si-hdg').textContent=String(hdg).padStart(3,'0')+'°';
-  const tCog=(r2d(Math.atan2(tvx,tvy))+360)%360;
-  const tSog=Math.sqrt(tvx*tvx+tvy*tvy);
-  document.getElementById('si-cog').textContent=tCog.toFixed(1)+'°';
-  document.getElementById('si-sog').textContent=tSog.toFixed(1)+' kn';
 
   const tx=dst*Math.sin(d2r(brg)), ty=dst*Math.cos(d2r(brg));
   // Heading-line vectors (water-track, no drift) — used only for the solid heading line
@@ -368,6 +364,11 @@ function upd(){
   const tvx=thx+cvx, tvy=thy+cvy;
   const rvx=tvx-ovx, rvy=tvy-ovy;
   const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
+
+  const tCog=(r2d(Math.atan2(tvx,tvy))+360)%360;
+  const tSog=Math.sqrt(tvx*tvx+tvy*tvy);
+  document.getElementById('si-cog').textContent=tCog.toFixed(1)+'°';
+  document.getElementById('si-sog').textContent=tSog.toFixed(1)+' kn';
 
   let tcpa=NaN,cpa=NaN;
   if(rs2<0.0001){tcpa=0;cpa=dst;}
