@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Radar FURUNO — CPA/TCPA/BCR/BCT</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff41;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;width:100vw}
+.top-bar{background:#050f05;border-bottom:1px solid #1a4a1a;padding:3px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{color:#00ff41;font-size:14px;font-weight:bold;letter-spacing:3px}
+.top-info{display:flex;gap:16px;font-size:10px;color:#336633}
+.top-info span{color:#00cc33}
+.clock{color:#ffff00;font-size:13px;font-weight:bold}
+.main{display:flex;flex:1;overflow:hidden}
+.left{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.sc-bar{background:#030d03;border-bottom:1px solid #0f2a0f;padding:3px 8px;display:flex;gap:5px;align-items:center;flex-shrink:0}
+.sc-bar label{font-size:9px;color:#336633;margin-right:4px}
+.sc{padding:2px 9px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #1a3a1a;background:#000;color:#336633;cursor:pointer;letter-spacing:.5px;transition:all .15s;border-radius:2px}
+.sc:hover{border-color:#00ff41;color:#00ff41}
+.sc.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+.radar-wrap{flex:1;position:relative;background:#000;overflow:hidden}
+canvas{display:block}
+.controls{background:#030d03;border-top:1px solid #0f2a0f;padding:4px 8px;display:grid;grid-template-columns:repeat(5,1fr) auto;gap:6px 10px;align-items:center;flex-shrink:0}
+.sl{display:flex;flex-direction:column;gap:1px}
+.sl-lbl{display:flex;justify-content:space-between;font-size:9px;color:#336633}
+.sl-lbl span{color:#ffff00;font-weight:bold}
+.sl input[type=range]{width:100%;height:12px;accent-color:#00ff41;cursor:pointer}
+.mode-col{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+.mode-btn{padding:4px 10px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #336633;background:#000;color:#336633;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
+.mode-btn:hover{border-color:#ffff00;color:#ffff00}
+.mode-btn.on{background:#1a1a00;border-color:#ffff00;color:#ffff00;font-weight:bold}
+.sidebar{width:200px;background:#050f05;border-left:1px solid #1a4a1a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.tgt-block{border-bottom:1px solid #0f2a0f;padding:5px 8px;flex-shrink:0}
+.tgt-label{color:#00ccff;font-size:9px;font-weight:bold;letter-spacing:1px;margin-bottom:1px}
+.tgt-name{color:#ffff00;font-size:10px;font-weight:bold;margin-bottom:3px}
+.tgt-row{display:flex;justify-content:space-between;font-size:9px;margin-bottom:1px}
+.tgt-row .lbl{color:#336633}
+.tgt-row .val{color:#00ff41;font-weight:bold}
+.tgt-row .val.danger{color:#ff3333}
+.tgt-row .val.warn{color:#ffaa00}
+.tgt-row .val.ok{color:#44ff88}
+.metrics{padding:5px 8px;flex-shrink:0}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mc{background:#030d03;border:1px solid #0f2a0f;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
+.mc:hover{border-color:#336633}
+.mc.sel{border-color:#00ff41}
+.mc .mk{font-size:8px;color:#336633;letter-spacing:.5px}
+.mc .mv{font-size:18px;font-weight:bold;line-height:1;margin:1px 0}
+.mc .mu{font-size:8px;color:#336633}
+.mc .mdef{font-size:8px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #0f2a0f;display:none}
+.mc.sel .mdef{display:block}
+.cpa-c{color:#ff3333}.tcpa-c{color:#44aaff}.bcr-c{color:#44ff88}.bct-c{color:#ffaa00}
+.alert-section{flex-shrink:0;padding:5px 8px;border-top:1px solid #0f2a0f}
+.alert-lbl{font-size:8px;color:#336633;margin-bottom:3px;letter-spacing:.5px}
+.alert-box{border-radius:2px;padding:4px 7px;font-size:9px;font-weight:bold;letter-spacing:.3px;line-height:1.4;min-height:28px;transition:all .3s;cursor:pointer;position:relative}
+.alert-box .reveal-hint{font-size:8px;font-weight:normal;opacity:.7;margin-top:2px}
+.ab-hidden{background:#0a0a0a;border:1px dashed #336633;color:#336633}
+.ab-danger{background:#2a0000;border:1px solid #ff3333;color:#ff3333}
+.ab-warn{background:#1a1000;border:1px solid #ffaa00;color:#ffaa00}
+.ab-ok{background:#001a06;border:1px solid #44ff88;color:#44ff88}
+.cfg{padding:5px 8px;font-size:8px;color:#1a4a1a;border-top:1px solid #0f2a0f;flex-shrink:0}
+.cfg span{color:#00ff41;display:block;margin-bottom:1px}
+.rng-selector{display:flex;flex-direction:column;gap:1px}
+.rng-btns{display:flex;gap:3px;flex-wrap:wrap}
+.rng-btn{padding:1px 6px;font-size:8px;font-family:'Courier New',monospace;border:1px solid #0f2a0f;background:#000;color:#336633;cursor:pointer;border-radius:1px}
+.rng-btn:hover{border-color:#00ff41;color:#00ff41}
+.rng-btn.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <span class="brand">FURUNO</span>
+    <div class="top-info">
+      <span>HEAD UP RM</span>
+      <span>TRUE-S</span>
+      <span id="vec-label">VECTOR 6min</span>
+      <span>CPA ALARM: 0.5NM</span>
+      <span>ANT2(M) X-BAND</span>
+    </div>
+    <span class="clock" id="clk">--:--</span>
+  </div>
+
+  <div class="main">
+    <div class="left">
+      <div class="sc-bar">
+        <label>ESCENARIO:</label>
+        <button class="sc on" onclick="sc('maersk')">MAERSK LABERINTO</button>
+        <button class="sc" onclick="sc('ladyj')">LADY J</button>
+        <button class="sc" onclick="sc('cruce')">Cruce peligroso</button>
+        <button class="sc" onclick="sc('frente')">Frente a frente</button>
+        <button class="sc" onclick="sc('alcance')">Alcance</button>
+        <button class="sc" onclick="sc('seguro')">Paso seguro</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
+          <label style="font-size:9px;color:#336633">RANGO:</label>
+          <div class="rng-btns" id="rng-btns">
+            <button class="rng-btn" onclick="setRng(0.5)">0.5</button>
+            <button class="rng-btn" onclick="setRng(1)">1</button>
+            <button class="rng-btn" onclick="setRng(2)">2</button>
+            <button class="rng-btn on" onclick="setRng(4)">4</button>
+            <button class="rng-btn" onclick="setRng(6)">6</button>
+            <button class="rng-btn" onclick="setRng(8)">8</button>
+            <button class="rng-btn" onclick="setRng(12)">12</button>
+            <button class="rng-btn" onclick="setRng(16)">16</button>
+            <button class="rng-btn" onclick="setRng(24)">24</button>
+          </div>
+          <span style="font-size:8px;color:#336633">NM</span>
+        </div>
+      </div>
+
+      <div class="radar-wrap" id="radar-wrap">
+        <canvas id="rc"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="sl">
+          <div class="sl-lbl">Rumbo blanco (HDG) <span id="vhdg">060°</span></div>
+          <input type="range" id="hdg" min="0" max="359" step="1" value="60" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Veloc. blanco (STW) <span id="vspd">11 kn</span></div>
+          <input type="range" id="spd" min="1" max="25" step="1" value="11" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Marcación (BRG) <span id="vbrg">060°</span></div>
+          <input type="range" id="brg" min="0" max="359" step="1" value="60" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Distancia (RNG) <span id="vdst">3.0 NM</span></div>
+          <input type="range" id="dst" min="0.2" max="24" step="0.1" value="3" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Vel. propio OS <span id="vospd">10 kn</span></div>
+          <input type="range" id="ospd" min="1" max="20" step="1" value="10" oninput="upd()">
+        </div>
+        <div class="mode-col">
+          <button class="mode-btn on" id="btn-normal" onclick="setMode('normal')">NORMAL</button>
+          <button class="mode-btn" id="btn-ejercicio" onclick="setMode('ejercicio')">EJERCICIO</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="tgt-block">
+        <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
+        <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
+        <div class="tgt-row"><span class="lbl">BRG</span><span class="val" id="si-brg">060°R</span></div>
+        <div class="tgt-row"><span class="lbl">RNG</span><span class="val" id="si-rng">3.000 NM</span></div>
+        <div class="tgt-row"><span class="lbl">STW</span><span class="val" id="si-stw">11 kn</span></div>
+        <div class="tgt-row"><span class="lbl">HDG</span><span class="val" id="si-hdg">060°</span></div>
+        <div class="tgt-row"><span class="lbl">CPA</span><span class="val danger" id="si-cpa">—</span></div>
+        <div class="tgt-row"><span class="lbl">TCPA</span><span class="val" id="si-tcpa">—</span></div>
+        <div class="tgt-row"><span class="lbl">BCR</span><span class="val" id="si-bcr">—</span></div>
+        <div class="tgt-row"><span class="lbl">BCT</span><span class="val" id="si-bct">—</span></div>
+      </div>
+
+      <div class="metrics">
+        <div style="font-size:8px;color:#336633;margin-bottom:3px;letter-spacing:.5px">TOQUE PARA DEFINICION</div>
+        <div class="m-grid">
+          <div class="mc sel" id="mc-cpa" onclick="selM('cpa')">
+            <div class="mk">CPA</div>
+            <div class="mv cpa-c" id="mv-cpa">—</div>
+            <div class="mu">NM</div>
+            <div class="mdef">Distancia minima proyectada. CPA=0 es colision. Evaluar siempre con TCPA.</div>
+          </div>
+          <div class="mc" id="mc-tcpa" onclick="selM('tcpa')">
+            <div class="mk">TCPA</div>
+            <div class="mv tcpa-c" id="mv-tcpa">—</div>
+            <div class="mu">min</div>
+            <div class="mdef">Tiempo al CPA. Negativo = ya paso el punto mas cercano.</div>
+          </div>
+          <div class="mc" id="mc-bcr" onclick="selM('bcr')">
+            <div class="mk">BCR</div>
+            <div class="mv bcr-c" id="mv-bcr">—</div>
+            <div class="mu">NM</div>
+            <div class="mdef">Distancia al cruce de proa. (+) adelante, (-) ya cruzo o va por popa.</div>
+          </div>
+          <div class="mc" id="mc-bct" onclick="selM('bct')">
+            <div class="mk">BCT</div>
+            <div class="mv bct-c" id="mv-bct">—</div>
+            <div class="mu">min</div>
+            <div class="mdef">Tiempo al cruce de proa. Junto con BCR define urgencia del cruce.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-section">
+        <div class="alert-lbl">EVALUACION DE SITUACION <span id="mode-indicator" style="color:#ffff00"></span></div>
+        <div class="alert-box ab-hidden" id="alrt" onclick="revealAlert()">
+          <span id="alrt-text">—</span>
+          <div class="reveal-hint" id="reveal-hint"></div>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div class="cfg">
+        <span>VEC: TRUE-S <span id="vec-min-lbl">6</span>min</span>
+        <span>CPA ALM: 0.5 NM / 10 min</span>
+        <span>OS HDG: 000° — GYRO1</span>
+        <div style="margin-top:4px;font-size:8px;color:#336633">
+          <div style="margin-bottom:2px">VECTOR:</div>
+          <div style="display:flex;gap:3px">
+            <button class="rng-btn" onclick="setVec(3)">3m</button>
+            <button class="rng-btn" onclick="setVec(6)" id="vbtn6" style="border-color:#00ff41;color:#00ff41">6m</button>
+            <button class="rng-btn" onclick="setVec(10)">10m</button>
+            <button class="rng-btn" onclick="setVec(15)">15m</button>
+            <button class="rng-btn" onclick="setVec(20)">20m</button>
+            <button class="rng-btn" onclick="setVec(30)">30m</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv=document.getElementById('rc');
+const ctx=cv.getContext('2d');
+let RNG=4, VECMIN=6, MODE='normal', revealed=false;
+let alertClass='ab-hidden', alertMsg='—';
+
+function d2r(d){return d*Math.PI/180}
+function gv(id){return +document.getElementById(id).value}
+function sv(id,v){document.getElementById(id).value=v}
+
+const SCEN={
+  maersk:{hdg:100,spd:11,brg:60,dst:3,ospd:10,name:'MAERSK LABERINTO',mmsi:'219542000',lbl:'AIS C'},
+  ladyj:{hdg:137,spd:12,brg:1,dst:4.4,ospd:10,name:'LADY J',mmsi:'636022859',lbl:'AIS A'},
+  cruce:{hdg:260,spd:14,brg:50,dst:5,ospd:12,name:'BLANCO TGT-01',mmsi:'—',lbl:'TT MAN'},
+  frente:{hdg:178,spd:14,brg:2,dst:7,ospd:10,name:'BLANCO TGT-02',mmsi:'—',lbl:'TT MAN'},
+  alcance:{hdg:5,spd:7,brg:170,dst:3,ospd:14,name:'BLANCO TGT-03',mmsi:'—',lbl:'TT MAN'},
+  seguro:{hdg:80,spd:10,brg:40,dst:9,ospd:10,name:'BLANCO TGT-04',mmsi:'—',lbl:'TT MAN'}
+};
+
+function sc(name){
+  document.querySelectorAll('.sc').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  const s=SCEN[name];
+  sv('hdg',s.hdg);sv('spd',s.spd);sv('brg',s.brg);sv('dst',s.dst);sv('ospd',s.ospd);
+  document.getElementById('tgt-label').textContent=s.lbl+' — MMSI '+s.mmsi;
+  document.getElementById('tgt-name').textContent=s.name;
+  revealed=false;
+  upd();
+}
+
+function setRng(r){
+  RNG=r;
+  document.querySelectorAll('.rng-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  upd();
+}
+
+function setVec(m){
+  VECMIN=m;
+  document.querySelectorAll('#app .cfg .rng-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  document.getElementById('vec-min-lbl').textContent=m;
+  document.getElementById('vec-label').textContent='VECTOR '+m+'min';
+  upd();
+}
+
+function setMode(m){
+  MODE=m;
+  document.getElementById('btn-normal').classList.toggle('on',m==='normal');
+  document.getElementById('btn-ejercicio').classList.toggle('on',m==='ejercicio');
+  revealed=false;
+  document.getElementById('mode-indicator').textContent=m==='ejercicio'?'[EJERCICIO]':'';
+  upd();
+}
+
+function revealAlert(){
+  if(MODE==='ejercicio'&&!revealed){
+    revealed=true;
+    showAlert(alertClass,alertMsg);
+    document.getElementById('reveal-hint').textContent='';
+  }
+}
+
+function showAlert(cls,msg){
+  const el=document.getElementById('alrt');
+  el.className='alert-box '+cls;
+  document.getElementById('alrt-text').textContent=msg;
+}
+
+function selM(k){
+  ['cpa','tcpa','bcr','bct'].forEach(x=>document.getElementById('mc-'+x).classList.remove('sel'));
+  document.getElementById('mc-'+k).classList.add('sel');
+}
+
+function fmt(m){
+  if(m>9999)return '>99:59';
+  const mm=Math.abs(m)|0,ss=Math.round((Math.abs(m)-mm)*60);
+  return (m<0?'-':'')+mm+':'+(ss<10?'0':'')+ss;
+}
+
+function upd(){
+  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst'),ospd=gv('ospd');
+  document.getElementById('vhdg').textContent=String(hdg).padStart(3,'0')+'°';
+  document.getElementById('vspd').textContent=spd+' kn';
+  document.getElementById('vbrg').textContent=String(brg).padStart(3,'0')+'°';
+  document.getElementById('vdst').textContent=dst.toFixed(1)+' NM';
+  document.getElementById('vospd').textContent=ospd+' kn';
+  document.getElementById('si-brg').textContent=String(brg).padStart(3,'0')+'°R';
+  document.getElementById('si-rng').textContent=dst.toFixed(3)+' NM';
+  document.getElementById('si-stw').textContent=spd+' kn';
+  document.getElementById('si-hdg').textContent=String(hdg).padStart(3,'0')+'°';
+
+  const tx=dst*Math.sin(d2r(brg)), ty=dst*Math.cos(d2r(brg));
+  const ovx=ospd*Math.sin(d2r(0)), ovy=ospd*Math.cos(d2r(0));
+  const tvx=spd*Math.sin(d2r(hdg)), tvy=spd*Math.cos(d2r(hdg));
+  const rvx=tvx-ovx, rvy=tvy-ovy;
+  const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
+
+  let tcpa=NaN,cpa=NaN;
+  if(rs2<0.0001){tcpa=0;cpa=dst;}
+  else{tcpa=(-dot/rs2)*60; const ch=tcpa/60; cpa=Math.sqrt((tx+rvx*ch)**2+(ty+rvy*ch)**2);}
+
+  let bcr=null,bct=null;
+  if(Math.abs(rvx)>0.001){const tb=-tx/rvx; if(tb>=0){bct=tb*60;bcr=ty+rvy*tb;}}
+
+  const cpaS=isNaN(cpa)?'—':cpa.toFixed(3)+' NM';
+  const tcpaS=isNaN(tcpa)?'—':fmt(tcpa);
+  const bcrS=bcr!==null?bcr.toFixed(3)+' NM':'—';
+  const bctS=bct!==null?fmt(bct):'—';
+
+  document.getElementById('si-cpa').textContent=cpaS;
+  document.getElementById('si-tcpa').textContent=tcpaS;
+  document.getElementById('si-bcr').textContent=bcrS;
+  document.getElementById('si-bct').textContent=bctS;
+  document.getElementById('mv-cpa').textContent=isNaN(cpa)?'—':cpa.toFixed(2);
+  document.getElementById('mv-tcpa').textContent=isNaN(tcpa)?'—':(Math.abs(tcpa)>999?'>99':tcpa.toFixed(0));
+  document.getElementById('mv-bcr').textContent=bcr!==null?bcr.toFixed(2):'—';
+  document.getElementById('mv-bct').textContent=bct!==null?(bct>999?'>99':bct.toFixed(0)):'—';
+
+  const cpaEl=document.getElementById('si-cpa');
+  if(!isNaN(cpa)) cpaEl.className='val '+(cpa<0.5?'danger':cpa<2?'warn':'ok');
+
+  if(!isNaN(cpa)&&cpa<0.3&&!isNaN(tcpa)&&tcpa>0&&tcpa<20){
+    alertClass='ab-danger';
+    alertMsg='!! ALARMA CPA — RIESGO COLISION — MANIOBRAR INMEDIATAMENTE !!';
+  } else if(!isNaN(cpa)&&cpa<1&&!isNaN(tcpa)&&tcpa>0&&tcpa<30){
+    alertClass='ab-warn';
+    alertMsg='ATENCION — CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—')+' NM / TCPA '+(!isNaN(tcpa)?tcpa.toFixed(0):'—')+' min — EVALUAR MANIOBRA';
+  } else if(!isNaN(tcpa)&&tcpa<0){
+    alertClass='ab-ok';
+    alertMsg='BLANCO ALEJANDOSE — TCPA NEGATIVO — SITUACION RESUELTA';
+  } else {
+    alertClass='ab-ok';
+    alertMsg='PASO SEGURO — CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—')+' NM — VIGILANCIA NORMAL';
+  }
+
+  if(MODE==='normal'){
+    showAlert(alertClass,alertMsg);
+    document.getElementById('reveal-hint').textContent='';
+  } else if(!revealed){
+    const el=document.getElementById('alrt');
+    el.className='alert-box ab-hidden';
+    document.getElementById('alrt-text').textContent='Analizá la situación...';
+    document.getElementById('reveal-hint').textContent='[ TOCAR PARA REVELAR EVALUACION ]';
+  } else {
+    showAlert(alertClass,alertMsg);
+    document.getElementById('reveal-hint').textContent='';
+  }
+
+  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg);
+}
+
+function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg){
+  const wrap=document.getElementById('radar-wrap');
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  cv.width=W; cv.height=H;
+  const CX=W/2, CY=H/2;
+  const PX=Math.min(W,H)*0.42/RNG;
+
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  // rings
+  const rings=[0.25,0.5,1,2,3,4,6,8,10,12,16,24].filter(r=>r<=RNG&&r>0);
+  ctx.lineWidth=0.5;
+  rings.forEach(r=>{
+    ctx.strokeStyle=r===RNG?'#1a5a2a':'#0a2a0a';
+    ctx.beginPath(); ctx.arc(CX,CY,r*PX,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='#1a5a2a'; ctx.font='9px Courier New';
+    ctx.fillText(r+' NM',CX+r*PX+2,CY-2);
+  });
+
+  // bearing lines
+  ctx.strokeStyle='#0a2a0a'; ctx.setLineDash([2,6]);
+  for(let a=0;a<360;a+=30){
+    const rad=d2r(a), rr=RNG*PX;
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(CX+Math.sin(rad)*rr,CY-Math.cos(rad)*rr); ctx.stroke();
+    ctx.fillStyle='#1a6a3a'; ctx.font='9px Courier New';
+    const lx=CX+Math.sin(rad)*rr*0.94, ly=CY-Math.cos(rad)*rr*0.94;
+    ctx.fillText(String(a).padStart(3,'0'),lx-10,ly+4);
+  }
+  ctx.setLineDash([]);
+
+  function ts(nx,ny){return[CX+nx*PX,CY-ny*PX];}
+  const proj=VECMIN/60;
+
+  // CPA line + dot
+  if(!isNaN(tcpa)&&tcpa>0){
+    const th=tcpa/60;
+    const [cpx,cpy]=ts(tx+rvx*th,ty+rvy*th);
+    ctx.strokeStyle='rgba(255,50,50,0.4)'; ctx.lineWidth=0.8; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(cpx,cpy); ctx.stroke();
+    ctx.setLineDash([]);
+    if(MODE==='normal'||revealed){
+      ctx.fillStyle='#ff3333';
+      ctx.beginPath(); ctx.arc(cpx,cpy,5,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ff8888'; ctx.font='bold 9px Courier New';
+      ctx.fillText('CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—'),cpx+7,cpy-3);
+    }
+  }
+
+  // BCR circle
+  if(bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
+    const [bcx,bcy]=ts(0,bcr);
+    ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle='#44ff88'; ctx.font='bold 9px Courier New'; ctx.fillText('BCR',bcx+8,bcy+4);
+    const bh=bct/60;
+    const [tx0s,ty0s]=ts(tx,ty);
+    const [bpx,bpy]=ts(tx+rvx*bh,ty+rvy*bh);
+    ctx.strokeStyle='rgba(68,255,136,0.25)'; ctx.lineWidth=0.6; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(bpx,bpy); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Relative vector (yellow solid) — always show
+  const [tx0s,ty0s]=ts(tx,ty);
+  const [rvex,rvey]=ts(tx+rvx*proj,ty+rvy*proj);
+  ctx.strokeStyle='#ffff00'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(rvex,rvey); ctx.stroke();
+  // arrowhead
+  const ang=Math.atan2(rvex-tx0s,-(rvey-ty0s));
+  ctx.fillStyle='#ffff00';
+  ctx.beginPath();
+  ctx.moveTo(rvex+Math.sin(ang)*7,rvey-Math.cos(ang)*7);
+  ctx.lineTo(rvex+Math.sin(ang-2.4)*4,rvey-Math.cos(ang-2.4)*4);
+  ctx.lineTo(rvex+Math.sin(ang+2.4)*4,rvey-Math.cos(ang+2.4)*4);
+  ctx.closePath(); ctx.fill();
+
+  // True vector target (dashed yellow)
+  const [tvex,tvey]=ts(tx+tvx*proj,ty+tvy*proj);
+  ctx.strokeStyle='rgba(255,255,0,0.3)'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tvex,tvey); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Target dot
+  ctx.fillStyle='#ffff00';
+  ctx.beginPath(); ctx.arc(tx0s,ty0s,7,0,Math.PI*2); ctx.fill();
+  // heading tick on target
+  ctx.strokeStyle='#000'; ctx.lineWidth=2;
+  const thrad=d2r(hdg);
+  ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tx0s+Math.sin(thrad)*10,ty0s-Math.cos(thrad)*10); ctx.stroke();
+  ctx.fillStyle='#ffff00'; ctx.font='bold 9px Courier New'; ctx.fillText('TGT',tx0s+9,ty0s-8);
+
+  // OS true vector (dashed green)
+  const [ovex,ovey]=ts(ovx*proj,ovy*proj);
+  ctx.strokeStyle='rgba(0,255,65,0.45)'; ctx.lineWidth=1.2; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // OS dot (triangle ship)
+  ctx.fillStyle='#00ff41';
+  ctx.beginPath();
+  ctx.moveTo(CX,CY-9); ctx.lineTo(CX-5,CY+5); ctx.lineTo(CX+5,CY+5); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#00ff41'; ctx.font='bold 9px Courier New'; ctx.fillText('OS',CX-7,CY+16);
+
+  // compass labels
+  ctx.fillStyle='#2a6a3a'; ctx.font='bold 10px Courier New';
+  ctx.fillText('N',CX-4,12); ctx.fillText('S',CX-3,H-4);
+  ctx.fillText('E',W-14,CY+4); ctx.fillText('W',4,CY+4);
+
+  // legend bottom left
+  const leg=[
+    {col:'#00ff41',lbl:'OS — propio'},
+    {col:'#ffff00',lbl:'TGT — blanco'},
+    {col:'#ffff00',lbl:'━ Vmr (relativo)'},
+    {col:'#ff3333',lbl:'● CPA'},
+    {col:'#44ff88',lbl:'○ BCR'},
+  ];
+  ctx.font='9px Courier New';
+  let lx=8,ly=H-6;
+  leg.forEach(l=>{
+    ctx.fillStyle=l.col; ctx.fillRect(lx,ly-8,8,8);
+    ctx.fillStyle='#2a6a3a'; ctx.fillText(l.lbl,lx+10,ly);
+    lx+=ctx.measureText(l.lbl).width+22;
+  });
+}
+
+function tick(){
+  const n=new Date();
+  document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+setInterval(tick,10000); tick();
+
+function resize(){upd();}
+window.addEventListener('resize',resize);
+upd();
+</script>
+</body>
+</html>

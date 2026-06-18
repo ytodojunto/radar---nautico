@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar — CPA / TCPA / BCR / BCT — Escuela Náutica</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff41;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+.header{background:#050f05;border-bottom:1px solid #1a4a1a;padding:6px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{color:#00ff41;font-size:15px;font-weight:bold;letter-spacing:3px}
+.header-sub{font-size:10px;color:#336633}
+.progress{display:flex;gap:6px;align-items:center}
+.pbar{width:8px;height:8px;border:1px solid #336633;border-radius:50%;cursor:pointer;transition:all .2s}
+.pbar.on{background:#00ff41;border-color:#00ff41}
+.slide-area{flex:1;overflow:hidden;position:relative}
+.slide{position:absolute;inset:0;display:none;padding:24px 32px;overflow:hidden}
+.slide.on{display:flex;flex-direction:column;justify-content:center}
+.nav-bar{background:#030d03;border-top:1px solid #0f2a0f;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.nav-btn{padding:5px 18px;font-size:11px;font-family:'Courier New',monospace;border:1px solid #336633;background:#000;color:#336633;cursor:pointer;border-radius:2px;letter-spacing:.5px;transition:all .15s}
+.nav-btn:hover{border-color:#00ff41;color:#00ff41}
+.nav-btn:disabled{opacity:.3;cursor:default}
+.slide-counter{font-size:10px;color:#336633}
+
+/* Slide content styles */
+.slide-title{font-size:28px;font-weight:bold;color:#00ff41;letter-spacing:2px;margin-bottom:6px}
+.slide-subtitle{font-size:13px;color:#336633;margin-bottom:24px;letter-spacing:1px}
+.big-def{font-size:15px;color:#aaffaa;line-height:1.7;max-width:780px;margin-bottom:16px}
+.highlight{color:#ffff00}
+.formula-box{background:#030d03;border:1px solid #1a4a1a;border-radius:4px;padding:14px 20px;display:inline-block;margin-bottom:16px}
+.formula-box .fterm{font-size:22px;font-weight:bold;letter-spacing:1px}
+.formula-box .ffull{font-size:11px;color:#336633;margin-top:3px;letter-spacing:.5px}
+.cards-row{display:flex;gap:16px;flex-wrap:wrap}
+.concept-card{flex:1;min-width:200px;background:#030d03;border:1px solid #1a4a1a;border-radius:4px;padding:14px 16px;cursor:pointer;transition:border-color .2s}
+.concept-card:hover{border-color:#00ff41}
+.concept-card.active{border-color:#ffff00}
+.cc-term{font-size:20px;font-weight:bold;margin-bottom:4px}
+.cc-full{font-size:10px;color:#336633;margin-bottom:8px;letter-spacing:.5px}
+.cc-def{font-size:12px;color:#aaffaa;line-height:1.5}
+.cc-cpa{color:#ff4444}.cc-tcpa{color:#44aaff}.cc-bcr{color:#44ff88}.cc-bct{color:#ffaa00}
+.scenario-box{background:#030d03;border:1px solid #1a4a1a;border-radius:4px;padding:16px 20px;max-width:700px;margin-bottom:14px}
+.sc-title{font-size:12px;color:#ffff00;font-weight:bold;margin-bottom:8px;letter-spacing:.5px}
+.sc-data{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.sc-item .sk{font-size:9px;color:#336633;letter-spacing:.5px}
+.sc-item .sv{font-size:18px;font-weight:bold}
+.sc-item .su{font-size:9px;color:#336633}
+.sc-sv-cpa{color:#ff4444}.sc-sv-tcpa{color:#44aaff}.sc-sv-bcr{color:#44ff88}.sc-sv-bct{color:#ffaa00}
+.sc-explain{font-size:11px;color:#aaffaa;line-height:1.6}
+.rule-list{list-style:none;max-width:700px}
+.rule-list li{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #0f2a0f;font-size:12px;color:#aaffaa;line-height:1.5}
+.rule-list li:last-child{border-bottom:none}
+.rule-num{color:#00ff41;font-weight:bold;min-width:22px;font-size:13px}
+.diagram-wrap{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.diagram-canvas-wrap{flex-shrink:0}
+.diagram-notes{flex:1;min-width:200px}
+.note-item{margin-bottom:10px;font-size:11px;color:#aaffaa;line-height:1.5;padding-left:10px;border-left:2px solid #1a4a1a}
+.note-item.active{border-left-color:#ffff00}
+.note-label{color:#ffff00;font-weight:bold;font-size:10px;letter-spacing:.5px;margin-bottom:2px}
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px}
+.intro-card{background:#030d03;border:1px solid #1a4a1a;border-radius:4px;padding:12px 14px}
+.ic-num{font-size:10px;color:#336633;margin-bottom:4px}
+.ic-title{font-size:14px;font-weight:bold;color:#00ff41;margin-bottom:6px}
+.ic-text{font-size:11px;color:#aaffaa;line-height:1.5}
+.colregs-box{background:#030d03;border:1px solid #ffaa00;border-radius:4px;padding:12px 16px;max-width:700px;margin-bottom:14px}
+.cb-title{font-size:10px;color:#ffaa00;font-weight:bold;letter-spacing:.5px;margin-bottom:6px}
+.cb-text{font-size:12px;color:#aaffaa;line-height:1.6}
+.tag{display:inline-block;padding:2px 8px;border-radius:2px;font-size:9px;font-weight:bold;letter-spacing:.5px;margin-right:6px}
+.tag-danger{background:#2a0000;color:#ff4444;border:1px solid #ff4444}
+.tag-warn{background:#1a1000;color:#ffaa00;border:1px solid #ffaa00}
+.tag-ok{background:#001a06;color:#44ff88;border:1px solid #44ff88}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="brand">FURUNO — RADAR NÁUTICO</div>
+      <div class="header-sub">Escuela Náutica — Guardia de Radar — CPA / TCPA / BCR / BCT</div>
+    </div>
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div class="slide-area">
+
+    <!-- SLIDE 0: Portada -->
+    <div class="slide on" id="s0">
+      <div class="slide-title">GUARDIA DE RADAR</div>
+      <div class="slide-subtitle">Conceptos fundamentales para la prevención de abordajes</div>
+      <div class="intro-grid">
+        <div class="intro-card">
+          <div class="ic-num">01</div>
+          <div class="ic-title" style="color:#ff4444">CPA</div>
+          <div class="ic-text">Closest Point of Approach — Distancia mínima proyectada entre los dos buques</div>
+        </div>
+        <div class="intro-card">
+          <div class="ic-num">02</div>
+          <div class="ic-title" style="color:#44aaff">TCPA</div>
+          <div class="ic-text">Time to CPA — Tiempo que falta para alcanzar ese punto de máxima aproximación</div>
+        </div>
+        <div class="intro-card">
+          <div class="ic-num">03</div>
+          <div class="ic-title" style="color:#44ff88">BCR</div>
+          <div class="ic-text">Bow Crossing Range — Distancia a la que el blanco cruzará nuestra proa</div>
+        </div>
+        <div class="intro-card">
+          <div class="ic-num">04</div>
+          <div class="ic-title" style="color:#ffaa00">BCT</div>
+          <div class="ic-text">Bow Crossing Time — Tiempo hasta que el blanco cruce nuestra proa</div>
+        </div>
+      </div>
+      <div style="margin-top:18px;font-size:11px;color:#336633">COLREGS 1972 — Regla 7: Riesgo de abordaje &nbsp;|&nbsp; Regla 8: Maniobras para evitar abordajes &nbsp;|&nbsp; Regla 19: Visibilidad reducida</div>
+    </div>
+
+    <!-- SLIDE 1: El radar como herramienta -->
+    <div class="slide" id="s1">
+      <div class="slide-title">EL RADAR EN LA GUARDIA</div>
+      <div class="slide-subtitle">Por qué el radar es el instrumento central en condiciones de riesgo</div>
+      <div class="big-def">El radar permite <span class="highlight">anticipar situaciones de riesgo</span> calculando matemáticamente lo que ocurrirá si ambos buques mantienen rumbo y velocidad.</div>
+      <ul class="rule-list">
+        <li><span class="rule-num">▶</span><span>En visibilidad normal, el ojo sirve para detectar. Con niebla, lluvia o de noche, <span class="highlight">el radar es el único instrumento confiable.</span></span></li>
+        <li><span class="rule-num">▶</span><span>Un blanco que visualmente parece alejarse puede tener CPA = 0 si su vector relativo apunta directamente a nuestro buque.</span></li>
+        <li><span class="rule-num">▶</span><span>El radar no muestra lo que está pasando — muestra <span class="highlight">lo que va a pasar.</span> Esa es su ventaja fundamental.</span></li>
+        <li><span class="rule-num">▶</span><span>La COLREGS Regla 7 obliga a usar todos los medios disponibles para evaluar riesgo, y menciona explícitamente el radar.</span></li>
+        <li><span class="rule-num">▶</span><span>Los valores CPA, TCPA, BCR y BCT son calculados automáticamente por el ARPA a partir del <span class="highlight">vector de movimiento relativo</span> del blanco.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 2: CPA -->
+    <div class="slide" id="s2">
+      <div class="slide-title" style="color:#ff4444">CPA</div>
+      <div class="slide-subtitle">Closest Point of Approach — Distancia mínima de aproximación</div>
+      <div class="formula-box">
+        <div class="fterm cc-cpa">CPA</div>
+        <div class="ffull">CLOSEST POINT OF APPROACH</div>
+      </div>
+      <div class="big-def">Es la <span class="highlight">distancia mínima proyectada</span> entre nuestro buque y el blanco, asumiendo que ambos mantienen rumbo y velocidad actuales.</div>
+      <ul class="rule-list" style="max-width:700px">
+        <li><span class="rule-num cc-cpa">0.0</span><span><span style="color:#ff4444">CPA = 0</span> significa colisión directa. El vector relativo del blanco apunta exactamente a nuestra posición.</span></li>
+        <li><span class="rule-num cc-cpa">&lt;0.5</span><span><span class="tag tag-danger">ALARMA</span>Situación de riesgo. Requiere maniobra inmediata según COLREGS.</span></li>
+        <li><span class="rule-num cc-cpa">0.5–2</span><span><span class="tag tag-warn">ATENCIÓN</span>Depende del tráfico y condiciones. Evaluar junto con TCPA.</span></li>
+        <li><span class="rule-num cc-cpa">&gt;2</span><span><span class="tag tag-ok">SEGURO</span>Paso con margen razonable. Mantener vigilancia.</span></li>
+        <li><span class="rule-num">⚠</span><span>El CPA solo tiene sentido evaluado junto con el <span class="highlight">TCPA.</span> Un CPA pequeño con TCPA grande da tiempo de actuar; con TCPA pequeño, exige maniobra ya.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 3: TCPA -->
+    <div class="slide" id="s3">
+      <div class="slide-title" style="color:#44aaff">TCPA</div>
+      <div class="slide-subtitle">Time to CPA — Tiempo hasta el punto de máxima aproximación</div>
+      <div class="formula-box">
+        <div class="fterm cc-tcpa">TCPA</div>
+        <div class="ffull">TIME TO CLOSEST POINT OF APPROACH</div>
+      </div>
+      <div class="big-def">Indica <span class="highlight">cuánto tiempo falta</span> para que se produzca la máxima aproximación entre los dos buques.</div>
+      <ul class="rule-list">
+        <li><span class="rule-num cc-tcpa">&gt;0</span><span>El CPA está en el <span class="highlight">futuro.</span> Los buques aún se están acercando al punto de máxima aproximación.</span></li>
+        <li><span class="rule-num cc-tcpa">&lt;0</span><span>TCPA <span class="highlight">negativo:</span> el punto de máxima aproximación ya ocurrió. El blanco se está alejando. Situación resuelta.</span></li>
+        <li><span class="rule-num cc-tcpa">&lt;6m</span><span><span class="tag tag-danger">URGENTE</span>Menos de 6 minutos. La maniobra debe ser inmediata y amplia. El margen de acción es mínimo.</span></li>
+        <li><span class="rule-num cc-tcpa">6–20m</span><span><span class="tag tag-warn">ATENCIÓN</span>Tiempo para evaluar y maniobrar ordenadamente. No esperar más.</span></li>
+        <li><span class="rule-num cc-tcpa">&gt;20m</span><span>Margen para monitorear evolución. Si la tendencia del CPA es decreciente, preparar maniobra.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 4: BCR -->
+    <div class="slide" id="s4">
+      <div class="slide-title" style="color:#44ff88">BCR</div>
+      <div class="slide-subtitle">Bow Crossing Range — Distancia al cruce de proa</div>
+      <div class="formula-box">
+        <div class="fterm cc-bcr">BCR</div>
+        <div class="ffull">BOW CROSSING RANGE</div>
+      </div>
+      <div class="big-def">Distancia a la que el blanco <span class="highlight">cruzará por nuestra proa</span> (o popa). Solo es significativo en situaciones de cruce.</div>
+      <ul class="rule-list">
+        <li><span class="rule-num cc-bcr">(+)</span><span>BCR <span class="highlight">positivo:</span> el blanco cruzará por delante de nuestra proa. A mayor BCR, mayor distancia al cruce.</span></li>
+        <li><span class="rule-num cc-bcr">(−)</span><span>BCR <span class="highlight">negativo:</span> el blanco ya cruzó nuestra proa, o cruzará por nuestra popa.</span></li>
+        <li><span class="rule-num cc-bcr">≈0</span><span><span class="tag tag-danger">PELIGRO</span>BCR cercano a cero significa que el blanco cruzará muy cerca de la proa. Situación crítica.</span></li>
+        <li><span class="rule-num">ℹ</span><span>BCR <span class="highlight">solo aplica cuando hay cruce real</span> de la línea de la proa. En alcance o situación de frente, este valor no es relevante.</span></li>
+        <li><span class="rule-num">ℹ</span><span>Siempre evaluar BCR junto con BCT: ambos determinan si el cruce es peligroso o no.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 5: BCT -->
+    <div class="slide" id="s5">
+      <div class="slide-title" style="color:#ffaa00">BCT</div>
+      <div class="slide-subtitle">Bow Crossing Time — Tiempo al cruce de proa</div>
+      <div class="formula-box">
+        <div class="fterm cc-bct">BCT</div>
+        <div class="ffull">BOW CROSSING TIME</div>
+      </div>
+      <div class="big-def">Tiempo que falta para que el blanco <span class="highlight">cruce la línea de la proa.</span> Complementa al BCR para decidir la maniobra táctica.</div>
+      <ul class="rule-list">
+        <li><span class="rule-num cc-bct">BCT grande</span><span>Hay tiempo. Podría convenir <span class="highlight">aumentar velocidad</span> para que el blanco pase por nuestra popa.</span></li>
+        <li><span class="rule-num cc-bct">BCT pequeño</span><span>Poco tiempo para el cruce. Generalmente es más seguro <span class="highlight">reducir velocidad</span> o caer hacia la popa del blanco.</span></li>
+        <li><span class="rule-num cc-bct">(−)</span><span>BCT negativo: el blanco ya cruzó la proa. La situación de cruce está resuelta.</span></li>
+        <li><span class="rule-num">⚠</span><span>Nunca actuar sobre BCT o BCR de forma aislada. Siempre en el contexto del <span class="highlight">CPA y TCPA</span> para evaluar la urgencia total de la situación.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 6: Casos reales del radar Furuno -->
+    <div class="slide" id="s6">
+      <div class="slide-title">CASOS REALES — FURUNO ARPA</div>
+      <div class="slide-subtitle">Datos tomados de una pantalla real — Río de la Plata, 16/09/2025</div>
+      <div class="scenario-box">
+        <div class="sc-title">AIS C — MAERSK LABERINTO &nbsp;|&nbsp; MMSI 219542000 &nbsp;|&nbsp; HDG 100° / STW 11.1 kn &nbsp;|&nbsp; BRG 060° / RNG 2.976 NM</div>
+        <div class="sc-data">
+          <div class="sc-item"><div class="sk">CPA</div><div class="sv sc-sv-cpa">0.422</div><div class="su">NM</div></div>
+          <div class="sc-item"><div class="sk">TCPA</div><div class="sv sc-sv-tcpa">29:02</div><div class="su">min</div></div>
+          <div class="sc-item"><div class="sk">BCR</div><div class="sv sc-sv-bcr">0.371</div><div class="su">NM</div></div>
+          <div class="sc-item"><div class="sk">BCT</div><div class="sv sc-sv-bct">27:23</div><div class="su">min</div></div>
+        </div>
+        <div class="sc-explain">
+          <span class="tag tag-warn">ATENCIÓN</span>
+          CPA de 0.422 NM está por debajo del límite típico de 0.5 NM. TCPA de 29 min da margen para evaluar. BCR de 0.371 NM indica cruce de proa muy ajustado en 27 min. Situación a monitorear activamente — evaluar maniobra preventiva.
+        </div>
+      </div>
+      <div class="scenario-box" style="border-color:#1a5a1a">
+        <div class="sc-title">AIS A — LADY J &nbsp;|&nbsp; MMSI 636022859 &nbsp;|&nbsp; HDG 137° / STW 11.7 kn &nbsp;|&nbsp; BRG 001° / RNG 4.407 NM</div>
+        <div class="sc-data">
+          <div class="sc-item"><div class="sk">CPA</div><div class="sv sc-sv-bcr">4.018</div><div class="su">NM</div></div>
+          <div class="sc-item"><div class="sk">TCPA</div><div class="sv" style="color:#aaffaa">&lt;-99:59</div><div class="su">min</div></div>
+          <div class="sc-item"><div class="sk">BCR</div><div class="sv sc-sv-bcr">4.288</div><div class="su">NM</div></div>
+          <div class="sc-item"><div class="sk">BCT</div><div class="sv" style="color:#aaffaa">-06:15</div><div class="su">min</div></div>
+        </div>
+        <div class="sc-explain">
+          <span class="tag tag-ok">SEGURO</span>
+          TCPA negativo: el Lady J ya pasó su punto de máxima aproximación. CPA de 4.018 NM con TCPA negativo confirma que el blanco se está alejando. BCT negativo confirma que ya cruzó la proa. Situación completamente resuelta.
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Reglas de maniobra -->
+    <div class="slide" id="s7">
+      <div class="slide-title">REGLAS DE MANIOBRA</div>
+      <div class="slide-subtitle">COLREGS 1972 — Cuándo y cómo maniobrar según los valores del radar</div>
+      <div class="colregs-box">
+        <div class="cb-title">REGLA 8 — MANIOBRAS PARA EVITAR ABORDAJES</div>
+        <div class="cb-text">Toda maniobra debe ser <span class="highlight">amplia, oportuna y claramente perceptible</span> para el otro buque. Un cambio de rumbo de al menos 30–45° es necesario para ser reconocible en el radar del otro.</div>
+      </div>
+      <ul class="rule-list">
+        <li><span class="rule-num">1</span><span><span class="highlight">Frente a frente (head-on):</span> Ambos buques caen a estribor. CPA ≈ 0, TCPA positivo pequeño, BCR negativo. Maniobra obligatoria de ambos.</span></li>
+        <li><span class="rule-num">2</span><span><span class="highlight">Cruce (crossing):</span> El buque con el otro a estribor cede. El que tiene el otro a babor mantiene. Evaluar BCR y BCT para el timing.</span></li>
+        <li><span class="rule-num">3</span><span><span class="highlight">Alcance (overtaking):</span> El que alcanza cede siempre, por cualquier costado. El alcanzado mantiene.</span></li>
+        <li><span class="rule-num">4</span><span><span class="highlight">Visibilidad reducida (Regla 19):</span> Velocidad de seguridad. Ante cualquier CPA dudoso, maniobrar. No esperar confirmación visual.</span></li>
+        <li><span class="rule-num">5</span><span>Verificar siempre el <span class="highlight">efecto de la maniobra en el radar:</span> tras maniobrar, el vector relativo del blanco debe alejarse del OS.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE 8: Resumen -->
+    <div class="slide" id="s8">
+      <div class="slide-title">RESUMEN</div>
+      <div class="slide-subtitle">Los cuatro valores del radar y cómo usarlos juntos</div>
+      <div class="cards-row">
+        <div class="concept-card" onclick="this.classList.toggle('active')">
+          <div class="cc-term cc-cpa">CPA</div>
+          <div class="cc-full">CLOSEST POINT OF APPROACH</div>
+          <div class="cc-def">¿A qué distancia pasará el blanco? Responde si hay riesgo. <span class="highlight">Menos de 0.5 NM = maniobrar.</span></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('active')">
+          <div class="cc-term cc-tcpa">TCPA</div>
+          <div class="cc-full">TIME TO CPA</div>
+          <div class="cc-def">¿Cuánto tiempo tenemos? Determina la urgencia. <span class="highlight">Negativo = situación resuelta.</span></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('active')">
+          <div class="cc-term cc-bcr">BCR</div>
+          <div class="cc-full">BOW CROSSING RANGE</div>
+          <div class="cc-def">¿Por dónde cruza la proa? Solo en situación de cruce. <span class="highlight">Positivo = cruza adelante.</span></div>
+        </div>
+        <div class="concept-card" onclick="this.classList.toggle('active')">
+          <div class="cc-term cc-bct">BCT</div>
+          <div class="cc-full">BOW CROSSING TIME</div>
+          <div class="cc-def">¿Cuándo cruza la proa? Decide si acelerar o reducir. <span class="highlight">Negativo = ya cruzó.</span></div>
+        </div>
+      </div>
+      <div style="margin-top:20px;background:#030d03;border:1px solid #1a4a1a;border-radius:4px;padding:12px 16px;max-width:700px">
+        <div style="font-size:10px;color:#336633;margin-bottom:6px;letter-spacing:.5px">REGLA PRÁCTICA</div>
+        <div style="font-size:13px;color:#aaffaa;line-height:1.7">Si <span style="color:#ff4444">CPA &lt; límite de seguridad</span> <strong>y</strong> <span style="color:#44aaff">TCPA &gt; 0</span> → existe riesgo → maniobra obligatoria amplia y oportuna.<br>Si <span style="color:#44aaff">TCPA &lt; 0</span> → el blanco ya pasó el punto de máxima aproximación → situación resuelta.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="nav-bar">
+    <button class="nav-btn" id="prev-btn" onclick="goSlide(-1)" disabled>◀ ANTERIOR</button>
+    <span class="slide-counter" id="slide-counter">1 / 9</span>
+    <button class="nav-btn" id="next-btn" onclick="goSlide(1)">SIGUIENTE ▶</button>
+  </div>
+</div>
+
+<script>
+const TOTAL=9;
+let cur=0;
+
+function buildProgress(){
+  const p=document.getElementById('progress');
+  for(let i=0;i<TOTAL;i++){
+    const b=document.createElement('div');
+    b.className='pbar'+(i===0?' on':'');
+    b.onclick=(()=>{const idx=i;return()=>showSlide(idx);})();
+    p.appendChild(b);
+  }
+}
+
+function showSlide(idx){
+  document.querySelectorAll('.slide').forEach((s,i)=>{
+    s.classList.toggle('on',i===idx);
+  });
+  document.querySelectorAll('.pbar').forEach((b,i)=>{
+    b.classList.toggle('on',i===idx);
+  });
+  document.getElementById('prev-btn').disabled=idx===0;
+  document.getElementById('next-btn').disabled=idx===TOTAL-1;
+  document.getElementById('slide-counter').textContent=(idx+1)+' / '+TOTAL;
+  cur=idx;
+}
+
+function goSlide(dir){showSlide(Math.max(0,Math.min(TOTAL-1,cur+dir)));}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') goSlide(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') goSlide(-1);
+});
+
+buildProgress();
+</script>
+</body>
+</html>
