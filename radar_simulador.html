@@ -105,6 +105,7 @@ canvas{display:block}
         <button class="sc ori-btn on" id="ori-north" onclick="setOri('north')">NORTH UP</button>
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
         <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
+        <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
           <label style="font-size:9px;color:#336633">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
@@ -251,7 +252,7 @@ canvas{display:block}
 <script>
 const cv=document.getElementById('rc');
 const ctx=cv.getContext('2d');
-let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north';
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true;
 let alertClass='ab-hidden', alertMsg='—';
 
 function d2r(d){return d*Math.PI/180}
@@ -276,6 +277,14 @@ function sc(name){
   document.getElementById('tgt-label').textContent=s.lbl+' — MMSI '+s.mmsi;
   document.getElementById('tgt-name').textContent=s.name;
   revealed=false;
+  upd();
+}
+
+function toggleArpa(){
+  SHOWARPA=!SHOWARPA;
+  const btn=document.getElementById('arpa-toggle');
+  btn.textContent='VECTOR ARPA: '+(SHOWARPA?'ON':'OFF');
+  btn.classList.toggle('on',SHOWARPA);
   upd();
 }
 
@@ -474,8 +483,8 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   function ts(nx,ny){return[CX+nx*PX,CY-ny*PX];}
   const proj=VECMIN/60;
 
-  // CPA line + dot
-  if(!isNaN(tcpa)&&tcpa>0){
+  // CPA line + dot — tied to the ARPA vector
+  if(SHOWARPA&&!isNaN(tcpa)&&tcpa>0){
     const th=tcpa/60;
     const [cpx,cpy]=ts(tx+rvx*th,ty+rvy*th);
     ctx.strokeStyle='rgba(255,50,50,0.4)'; ctx.lineWidth=0.8; ctx.setLineDash([3,4]);
@@ -488,8 +497,8 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     }
   }
 
-  // BCR circle
-  if(bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
+  // BCR circle — tied to the ARPA vector
+  if(SHOWARPA&&bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
     const [bcx,bcy]=ts(0,bcr);
     ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
@@ -506,7 +515,7 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   const [rvex,rvey]=ts(tx+rvx*proj,ty+rvy*proj);
   const ang=Math.atan2(rvex-tx0s,-(rvey-ty0s));
 
-  // True COG/SOG vector target (dashed yellow, ground track with drift)
+  // True COG/SOG vector target (dashed yellow, ground track with drift) — always visible
   const [tvex,tvey]=ts(tx+tvx*proj,ty+tvy*proj);
   ctx.strokeStyle='rgba(255,255,0,0.55)'; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
   ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tvex,tvey); ctx.stroke();
@@ -523,17 +532,19 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.beginPath(); ctx.arc(tx0s,ty0s,7,0,Math.PI*2); ctx.fill();
   txt(tx0s+9,ty0s-8,'TGT','bold 9px Courier New','#ffff00');
 
-  // Relative vector (yellow solid thick) — always show, drawn after heading line so it stays prominent
-  ctx.strokeStyle='#ffff00'; ctx.lineWidth=2.5;
-  ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(rvex,rvey); ctx.stroke();
-  ctx.fillStyle='#ffff00';
-  ctx.beginPath();
-  ctx.moveTo(rvex+Math.sin(ang)*7,rvey-Math.cos(ang)*7);
-  ctx.lineTo(rvex+Math.sin(ang-2.4)*4,rvey-Math.cos(ang-2.4)*4);
-  ctx.lineTo(rvex+Math.sin(ang+2.4)*4,rvey-Math.cos(ang+2.4)*4);
-  ctx.closePath(); ctx.fill();
+  // Relative vector / ARPA vector (yellow solid thick) — toggled by VECTOR ARPA button
+  if(SHOWARPA){
+    ctx.strokeStyle='#ffff00'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(rvex,rvey); ctx.stroke();
+    ctx.fillStyle='#ffff00';
+    ctx.beginPath();
+    ctx.moveTo(rvex+Math.sin(ang)*7,rvey-Math.cos(ang)*7);
+    ctx.lineTo(rvex+Math.sin(ang-2.4)*4,rvey-Math.cos(ang-2.4)*4);
+    ctx.lineTo(rvex+Math.sin(ang+2.4)*4,rvey-Math.cos(ang+2.4)*4);
+    ctx.closePath(); ctx.fill();
+  }
 
-  // OS true COG/SOG vector (dashed green, ground track with drift)
+  // OS true COG/SOG vector (dashed green, ground track with drift) — always visible
   const [ovex,ovey]=ts(ovx*proj,ovy*proj);
   ctx.strokeStyle='rgba(0,255,65,0.6)'; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
   ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
@@ -575,9 +586,11 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     {col:'#ffff00',lbl:'TGT — blanco'},
     {col:'#ffff00',lbl:'━ HDG (aguja)'},
     {col:'#ffff00',lbl:'┄ COG/SOG (deriva)'},
-    {col:'#ffff00',lbl:'━ Vmr (relativo)'},
-    {col:'#ff3333',lbl:'● CPA'},
-    {col:'#44ff88',lbl:'○ BCR'},
+    ...(SHOWARPA?[
+      {col:'#ffff00',lbl:'━ Vmr (relativo/ARPA)'},
+      {col:'#ff3333',lbl:'● CPA'},
+      {col:'#44ff88',lbl:'○ BCR'},
+    ]:[]),
   ];
   ctx.font='9px Courier New';
   let lx=8,ly=H-6;
