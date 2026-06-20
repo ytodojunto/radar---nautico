@@ -106,6 +106,7 @@ canvas{display:block}
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
         <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
         <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
+        <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
           <label style="font-size:9px;color:#336633">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
@@ -174,6 +175,16 @@ canvas{display:block}
     </div>
 
     <div class="sidebar">
+      <div class="tgt-block">
+        <div class="tgt-label" style="color:#44ff88">OS — BUQUE PROPIO</div>
+        <div class="tgt-name" id="os-name">OS</div>
+        <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="os-hdg-disp">000°</span></div>
+        <div class="tgt-row"><span class="lbl">STW (agua)</span><span class="val" id="os-stw-disp">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">COG (fondo)</span><span class="val" id="os-cog-disp" style="color:#aaffaa">000°</span></div>
+        <div class="tgt-row"><span class="lbl">SOG (fondo)</span><span class="val" id="os-sog-disp" style="color:#aaffaa">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">CORRIENTE</span><span class="val" id="os-cur-disp">000° / 0.0kn</span></div>
+      </div>
+
       <div class="tgt-block">
         <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
         <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
@@ -252,7 +263,7 @@ canvas{display:block}
 <script>
 const cv=document.getElementById('rc');
 const ctx=cv.getContext('2d');
-let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true;
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true, SHOWHEADLINE=true;
 let alertClass='ab-hidden', alertMsg='—';
 
 function d2r(d){return d*Math.PI/180}
@@ -285,6 +296,14 @@ function toggleArpa(){
   const btn=document.getElementById('arpa-toggle');
   btn.textContent='VECTOR ARPA: '+(SHOWARPA?'ON':'OFF');
   btn.classList.toggle('on',SHOWARPA);
+  upd();
+}
+
+function toggleHeadline(){
+  SHOWHEADLINE=!SHOWHEADLINE;
+  const btn=document.getElementById('headline-toggle');
+  btn.textContent='LINEA DE FE: '+(SHOWHEADLINE?'ON':'OFF');
+  btn.classList.toggle('on',SHOWHEADLINE);
   upd();
 }
 
@@ -373,6 +392,15 @@ function upd(){
   const tvx=thx+cvx, tvy=thy+cvy;
   const rvx=tvx-ovx, rvy=tvy-ovy;
   const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
+
+  // OS data panel (mirrors the target panel)
+  const osCog=(r2d(Math.atan2(ovx,ovy))+360)%360;
+  const osSog=Math.sqrt(ovx*ovx+ovy*ovy);
+  document.getElementById('os-hdg-disp').textContent=String(oshdg).padStart(3,'0')+'°';
+  document.getElementById('os-stw-disp').textContent=ospd.toFixed(1)+' kn';
+  document.getElementById('os-cog-disp').textContent=osCog.toFixed(1)+'°';
+  document.getElementById('os-sog-disp').textContent=osSog.toFixed(1)+' kn';
+  document.getElementById('os-cur-disp').textContent=String(curdir).padStart(3,'0')+'° / '+curspd.toFixed(1)+'kn';
 
   const tCog=(r2d(Math.atan2(tvx,tvy))+360)%360;
   const tSog=Math.sqrt(tvx*tvx+tvy*tvy);
@@ -550,13 +578,19 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
   ctx.setLineDash([]);
 
-  // OS heading line (solid, fixed to true HDG / gyro compass, water track)
-  const osr=d2r(oshdg);
-  const hlLenO=[CX+Math.sin(osr)*RNG*PX*0.18, CY-Math.cos(osr)*RNG*PX*0.18];
-  ctx.strokeStyle='#00ff41'; ctx.lineWidth=1.2;
-  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
+  // OS heading line / linea de fe (solid, fixed to true HDG / gyro compass, water track)
+  // Va del centro hasta el borde del radar, como en un radar real. Se puede ocultar
+  // con el boton "LINEA DE FE" para no tapar blancos cercanos al rumbo propio.
+  if(SHOWHEADLINE){
+    const osr=d2r(oshdg);
+    const rr=RNG*PX;
+    const hlLenO=[CX+Math.sin(osr)*rr, CY-Math.cos(osr)*rr];
+    ctx.strokeStyle='#00ff41'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
+  }
 
   // OS dot (triangle ship, bow points to true heading oshdg)
+  const osr=d2r(oshdg);
   function rot(px,py){return [CX+px*Math.cos(osr)-py*Math.sin(osr), CY+px*Math.sin(osr)+py*Math.cos(osr)];}
   ctx.fillStyle='#00ff41';
   ctx.beginPath();
