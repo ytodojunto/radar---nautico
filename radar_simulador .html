@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar — CPA / TCPA / BCR / BCT — Escuela Nacional Fluvial</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff41;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;width:100vw}
+.top-bar{background:#050f05;border-bottom:1px solid #1a4a1a;padding:3px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{color:#00ff41;font-size:14px;font-weight:bold;letter-spacing:3px}
+.top-info{display:flex;gap:16px;font-size:10px;color:#336633}
+.top-info span{color:#00cc33}
+.clock{color:#ffff00;font-size:13px;font-weight:bold}
+.main{display:flex;flex:1;overflow:hidden}
+.left{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.sc-bar{background:#030d03;border-bottom:1px solid #0f2a0f;padding:3px 8px;display:flex;gap:5px;align-items:center;flex-shrink:0}
+.sc-bar label{font-size:9px;color:#336633;margin-right:4px}
+.sc{padding:2px 9px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #1a3a1a;background:#000;color:#336633;cursor:pointer;letter-spacing:.5px;transition:all .15s;border-radius:2px}
+.sc:hover{border-color:#00ff41;color:#00ff41}
+.sc.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+.radar-wrap{flex:1;position:relative;background:#000;overflow:hidden}
+canvas{display:block}
+.controls{background:#030d03;border-top:1px solid #0f2a0f;padding:4px 8px;display:grid;grid-template-columns:repeat(6,1fr) auto;gap:6px 8px;align-items:center;flex-shrink:0}
+.sl{display:flex;flex-direction:column;gap:1px}
+.sl-lbl{display:flex;justify-content:space-between;font-size:9px;color:#336633}
+.sl-lbl span{color:#ffff00;font-weight:bold}
+.sl input[type=range]{width:100%;height:12px;accent-color:#00ff41;cursor:pointer}
+.mode-col{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
+.mode-btn{padding:4px 10px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #336633;background:#000;color:#336633;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
+.mode-btn:hover{border-color:#ffff00;color:#ffff00}
+.mode-btn.on{background:#1a1a00;border-color:#ffff00;color:#ffff00;font-weight:bold}
+.sidebar{width:200px;background:#050f05;border-left:1px solid #1a4a1a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.tgt-block{border-bottom:1px solid #0f2a0f;padding:5px 8px;flex-shrink:0}
+.tgt-label{color:#00ccff;font-size:10px;font-weight:bold;letter-spacing:1px;margin-bottom:2px}
+.tgt-name{color:#ffff00;font-size:12px;font-weight:bold;margin-bottom:5px}
+.tgt-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.tgt-row .lbl{color:#336633}
+.tgt-row .val{color:#00ff41;font-weight:bold;font-size:13px}
+.tgt-row .val.danger{color:#ff3333}
+.tgt-row .val.warn{color:#ffaa00}
+.tgt-row .val.ok{color:#44ff88}
+.metrics{padding:5px 8px;flex-shrink:0}
+.m-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mc{background:#030d03;border:1px solid #0f2a0f;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
+.mc:hover{border-color:#336633}
+.mc.sel{border-color:#00ff41}
+.mc .mk{font-size:9px;color:#336633;letter-spacing:.5px}
+.mc .mv{font-size:22px;font-weight:bold;line-height:1;margin:1px 0}
+.mc .mu{font-size:9px;color:#336633}
+.mc .mdef{font-size:8px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #0f2a0f;display:none}
+.mc.sel .mdef{display:block}
+.cpa-c{color:#ff3333}.tcpa-c{color:#44aaff}.bcr-c{color:#44ff88}.bct-c{color:#ffaa00}
+.alert-section{flex-shrink:0;padding:5px 8px;border-top:1px solid #0f2a0f}
+.alert-lbl{font-size:8px;color:#336633;margin-bottom:3px;letter-spacing:.5px}
+.alert-box{border-radius:2px;padding:4px 7px;font-size:9px;font-weight:bold;letter-spacing:.3px;line-height:1.4;min-height:28px;transition:all .3s;cursor:pointer;position:relative}
+.alert-box .reveal-hint{font-size:8px;font-weight:normal;opacity:.7;margin-top:2px}
+.ab-hidden{background:#0a0a0a;border:1px dashed #336633;color:#336633}
+.ab-danger{background:#2a0000;border:1px solid #ff3333;color:#ff3333}
+.ab-warn{background:#1a1000;border:1px solid #ffaa00;color:#ffaa00}
+.ab-ok{background:#001a06;border:1px solid #44ff88;color:#44ff88}
+.cfg{padding:5px 8px;font-size:8px;color:#1a4a1a;border-top:1px solid #0f2a0f;flex-shrink:0}
+.cfg span{color:#00ff41;display:block;margin-bottom:1px}
+.rng-selector{display:flex;flex-direction:column;gap:1px}
+.rng-btns{display:flex;gap:3px;flex-wrap:wrap}
+.rng-btn{padding:1px 6px;font-size:8px;font-family:'Courier New',monospace;border:1px solid #0f2a0f;background:#000;color:#336633;cursor:pointer;border-radius:1px}
+.rng-btn:hover{border-color:#00ff41;color:#00ff41}
+.rng-btn.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <img src="ESNF_FONDO.jpg" alt="ENF" style="height:36px;width:auto;border-radius:2px;opacity:.9">
+      <div>
+        <div style="font-size:9px;font-weight:bold;color:#c8a020;letter-spacing:1px;line-height:1.2">ESCUELA NACIONAL FLUVIAL</div>
+        <span class="brand">FURUNO</span>
+      </div>
+    </div>
+    <div class="top-info">
+      <span>HEAD UP RM</span>
+      <span>TRUE-S</span>
+      <span id="vec-label">VECTOR 6min</span>
+      <span>CPA ALARM: 0.5NM</span>
+      <span>ANT2(M) X-BAND</span>
+    </div>
+    <span class="clock" id="clk">--:--</span>
+  </div>
+
+  <div class="main">
+    <div class="left">
+      <div class="sc-bar">
+        <label>ESCENARIO:</label>
+        <button class="sc on" onclick="sc('maersk')">MAERSK LABERINTO</button>
+        <button class="sc" onclick="sc('ladyj')">LADY J</button>
+        <button class="sc" onclick="sc('cruce')">Cruce peligroso</button>
+        <button class="sc" onclick="sc('frente')">Frente a frente</button>
+        <button class="sc" onclick="sc('alcance')">Alcance</button>
+        <button class="sc" onclick="sc('seguro')">Paso seguro</button>
+      </div>
+      <div class="sc-bar" style="border-top:1px solid #0f2a0f">
+        <label>ORIENTACION:</label>
+        <button class="sc ori-btn on" id="ori-north" onclick="setOri('north')">NORTH UP</button>
+        <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
+        <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
+        <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
+        <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
+          <label style="font-size:9px;color:#336633">RANGO:</label>
+          <div class="rng-btns" id="rng-btns">
+            <button class="rng-btn" onclick="setRng(0.5)">0.5</button>
+            <button class="rng-btn" onclick="setRng(1)">1</button>
+            <button class="rng-btn" onclick="setRng(2)">2</button>
+            <button class="rng-btn on" onclick="setRng(4)">4</button>
+            <button class="rng-btn" onclick="setRng(6)">6</button>
+            <button class="rng-btn" onclick="setRng(8)">8</button>
+            <button class="rng-btn" onclick="setRng(12)">12</button>
+            <button class="rng-btn" onclick="setRng(16)">16</button>
+            <button class="rng-btn" onclick="setRng(24)">24</button>
+          </div>
+          <span style="font-size:8px;color:#336633">NM</span>
+        </div>
+      </div>
+
+
+      <div class="radar-wrap" id="radar-wrap">
+        <canvas id="rc"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="sl">
+          <div class="sl-lbl">Rumbo blanco (HDG) <span id="vhdg">060°</span></div>
+          <input type="range" id="hdg" min="0" max="359" step="1" value="60" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Veloc. blanco (STW) <span id="vspd">11 kn</span></div>
+          <input type="range" id="spd" min="1" max="25" step="1" value="11" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Marcación (BRG) <span id="vbrg">060°</span></div>
+          <input type="range" id="brg" min="0" max="359" step="1" value="60" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Distancia (RNG) <span id="vdst">3.0 NM</span></div>
+          <input type="range" id="dst" min="0.2" max="24" step="0.1" value="3" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Rumbo propio (OS HDG) <span id="voshdg">000°</span></div>
+          <input type="range" id="oshdg" min="0" max="359" step="1" value="0" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Vel. propio OS <span id="vospd">10 kn</span></div>
+          <input type="range" id="ospd" min="1" max="20" step="1" value="10" oninput="upd()">
+        </div>
+        <div class="mode-col">
+          <button class="mode-btn on" id="btn-normal" onclick="setMode('normal')">NORMAL</button>
+          <button class="mode-btn" id="btn-ejercicio" onclick="setMode('ejercicio')">EJERCICIO</button>
+        </div>
+      </div>
+      <div class="controls" style="grid-template-columns:1fr 1fr auto;border-top:1px solid #0f2a0f">
+        <div class="sl">
+          <div class="sl-lbl">Dirección corriente <span id="vcurdir">000°</span></div>
+          <input type="range" id="curdir" min="0" max="359" step="1" value="0" oninput="upd()">
+        </div>
+        <div class="sl">
+          <div class="sl-lbl">Veloc. corriente <span id="vcurspd">0.0 kn</span></div>
+          <input type="range" id="curspd" min="0" max="3" step="0.1" value="0" oninput="upd()">
+        </div>
+        <div style="font-size:8px;color:#336633;line-height:1.4;max-width:170px">
+          Heading line (━) = rumbo de aguja.<br>Vector COG/SOG (┄) = rumbo real sobre el fondo, con deriva.
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="tgt-block">
+        <div class="tgt-label" style="color:#44ff88">OS — BUQUE PROPIO</div>
+        <div class="tgt-name" id="os-name">OS</div>
+        <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="os-hdg-disp">000°</span></div>
+        <div class="tgt-row"><span class="lbl">STW (agua)</span><span class="val" id="os-stw-disp">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">COG (fondo)</span><span class="val" id="os-cog-disp" style="color:#aaffaa">000°</span></div>
+        <div class="tgt-row"><span class="lbl">SOG (fondo)</span><span class="val" id="os-sog-disp" style="color:#aaffaa">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">CORRIENTE</span><span class="val" id="os-cur-disp">000° / 0.0kn</span></div>
+      </div>
+
+      <div class="tgt-block">
+        <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
+        <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
+        <div class="tgt-row"><span class="lbl">BRG</span><span class="val" id="si-brg">060°R</span></div>
+        <div class="tgt-row"><span class="lbl">RNG</span><span class="val" id="si-rng">3.000 NM</span></div>
+        <div class="tgt-row"><span class="lbl">STW</span><span class="val" id="si-stw">11 kn</span></div>
+        <div class="tgt-row"><span class="lbl">HDG</span><span class="val" id="si-hdg">060°</span></div>
+        <div class="tgt-row"><span class="lbl">COG</span><span class="val" id="si-cog" style="color:#aaffaa">060°</span></div>
+        <div class="tgt-row"><span class="lbl">SOG</span><span class="val" id="si-sog" style="color:#aaffaa">11 kn</span></div>
+        <div class="tgt-row"><span class="lbl">CPA</span><span class="val danger" id="si-cpa">—</span></div>
+        <div class="tgt-row"><span class="lbl">TCPA</span><span class="val" id="si-tcpa">—</span></div>
+        <div class="tgt-row"><span class="lbl">BCR</span><span class="val" id="si-bcr">—</span></div>
+        <div class="tgt-row"><span class="lbl">BCT</span><span class="val" id="si-bct">—</span></div>
+      </div>
+
+      <div class="metrics">
+        <div style="font-size:8px;color:#336633;margin-bottom:3px;letter-spacing:.5px">TOQUE PARA DEFINICION</div>
+        <div class="m-grid">
+          <div class="mc sel" id="mc-cpa" onclick="selM('cpa')">
+            <div class="mk">CPA</div>
+            <div class="mv cpa-c" id="mv-cpa">—</div>
+            <div class="mu">NM</div>
+            <div class="mdef">Distancia minima proyectada. CPA=0 es colision. Evaluar siempre con TCPA.</div>
+          </div>
+          <div class="mc" id="mc-tcpa" onclick="selM('tcpa')">
+            <div class="mk">TCPA</div>
+            <div class="mv tcpa-c" id="mv-tcpa">—</div>
+            <div class="mu">min</div>
+            <div class="mdef">Tiempo al CPA. Negativo = ya paso el punto mas cercano.</div>
+          </div>
+          <div class="mc" id="mc-bcr" onclick="selM('bcr')">
+            <div class="mk">BCR</div>
+            <div class="mv bcr-c" id="mv-bcr">—</div>
+            <div class="mu">NM</div>
+            <div class="mdef">Distancia al cruce de proa. (+) adelante, (-) ya cruzo o va por popa.</div>
+          </div>
+          <div class="mc" id="mc-bct" onclick="selM('bct')">
+            <div class="mk">BCT</div>
+            <div class="mv bct-c" id="mv-bct">—</div>
+            <div class="mu">min</div>
+            <div class="mdef">Tiempo al cruce de proa. Junto con BCR define urgencia del cruce.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert-section">
+        <div class="alert-lbl">EVALUACION DE SITUACION <span id="mode-indicator" style="color:#ffff00"></span></div>
+        <div class="alert-box ab-hidden" id="alrt" onclick="revealAlert()">
+          <span id="alrt-text">—</span>
+          <div class="reveal-hint" id="reveal-hint"></div>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div class="cfg">
+        <span>VEC: TRUE-S <span id="vec-min-lbl">6</span>min</span>
+        <span>CPA ALM: 0.5 NM / 10 min</span>
+        <span>OS HDG: 000° — GYRO1</span>
+        <div style="margin-top:4px;font-size:8px;color:#336633">
+          <div style="margin-bottom:2px">VECTOR:</div>
+          <div style="display:flex;gap:3px">
+            <button class="rng-btn" onclick="setVec(3)">3m</button>
+            <button class="rng-btn" onclick="setVec(6)" id="vbtn6" style="border-color:#00ff41;color:#00ff41">6m</button>
+            <button class="rng-btn" onclick="setVec(10)">10m</button>
+            <button class="rng-btn" onclick="setVec(15)">15m</button>
+            <button class="rng-btn" onclick="setVec(20)">20m</button>
+            <button class="rng-btn" onclick="setVec(30)">30m</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv=document.getElementById('rc');
+const ctx=cv.getContext('2d');
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true, SHOWHEADLINE=true;
+let alertClass='ab-hidden', alertMsg='—';
+
+function d2r(d){return d*Math.PI/180}
+function r2d(r){return r*180/Math.PI}
+function gv(id){return +document.getElementById(id).value}
+function sv(id,v){document.getElementById(id).value=v}
+
+const SCEN={
+  maersk:{hdg:100,spd:11,brg:60,dst:3,ospd:10,oshdg:0,curdir:0,curspd:0,name:'MAERSK LABERINTO',mmsi:'219542000',lbl:'AIS C'},
+  ladyj:{hdg:137,spd:12,brg:1,dst:4.4,ospd:10,oshdg:0,curdir:0,curspd:0,name:'LADY J',mmsi:'636022859',lbl:'AIS A'},
+  cruce:{hdg:260,spd:14,brg:50,dst:5,ospd:12,oshdg:0,curdir:0,curspd:0,name:'BLANCO TGT-01',mmsi:'—',lbl:'TT MAN'},
+  frente:{hdg:178,spd:14,brg:2,dst:7,ospd:10,oshdg:0,curdir:0,curspd:0,name:'BLANCO TGT-02',mmsi:'—',lbl:'TT MAN'},
+  alcance:{hdg:5,spd:7,brg:170,dst:3,ospd:14,oshdg:0,curdir:0,curspd:0,name:'BLANCO TGT-03',mmsi:'—',lbl:'TT MAN'},
+  seguro:{hdg:80,spd:10,brg:40,dst:9,ospd:10,oshdg:0,curdir:0,curspd:0,name:'BLANCO TGT-04',mmsi:'—',lbl:'TT MAN'}
+};
+
+function sc(name){
+  document.querySelectorAll('.sc:not(.ori-btn)').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  const s=SCEN[name];
+  sv('hdg',s.hdg);sv('spd',s.spd);sv('brg',s.brg);sv('dst',s.dst);sv('ospd',s.ospd);sv('oshdg',s.oshdg);sv('curdir',s.curdir);sv('curspd',s.curspd);
+  document.getElementById('tgt-label').textContent=s.lbl+' — MMSI '+s.mmsi;
+  document.getElementById('tgt-name').textContent=s.name;
+  revealed=false;
+  upd();
+}
+
+function toggleArpa(){
+  SHOWARPA=!SHOWARPA;
+  const btn=document.getElementById('arpa-toggle');
+  btn.textContent='VECTOR ARPA: '+(SHOWARPA?'ON':'OFF');
+  btn.classList.toggle('on',SHOWARPA);
+  upd();
+}
+
+function toggleHeadline(){
+  SHOWHEADLINE=!SHOWHEADLINE;
+  const btn=document.getElementById('headline-toggle');
+  btn.textContent='LINEA DE FE: '+(SHOWHEADLINE?'ON':'OFF');
+  btn.classList.toggle('on',SHOWHEADLINE);
+  upd();
+}
+
+function setOri(mode){
+  ORI=mode;
+  document.getElementById('ori-north').classList.toggle('on',mode==='north');
+  document.getElementById('ori-course').classList.toggle('on',mode==='course');
+  document.getElementById('ori-head').classList.toggle('on',mode==='head');
+  upd();
+}
+
+function setRng(r){
+  RNG=r;
+  document.querySelectorAll('.rng-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  upd();
+}
+
+function setVec(m){
+  VECMIN=m;
+  document.querySelectorAll('#app .cfg .rng-btn').forEach(b=>b.classList.remove('on'));
+  event.target.classList.add('on');
+  document.getElementById('vec-min-lbl').textContent=m;
+  document.getElementById('vec-label').textContent='VECTOR '+m+'min';
+  upd();
+}
+
+function setMode(m){
+  MODE=m;
+  document.getElementById('btn-normal').classList.toggle('on',m==='normal');
+  document.getElementById('btn-ejercicio').classList.toggle('on',m==='ejercicio');
+  revealed=false;
+  document.getElementById('mode-indicator').textContent=m==='ejercicio'?'[EJERCICIO]':'';
+  upd();
+}
+
+function revealAlert(){
+  if(MODE==='ejercicio'&&!revealed){
+    revealed=true;
+    showAlert(alertClass,alertMsg);
+    document.getElementById('reveal-hint').textContent='';
+  }
+}
+
+function showAlert(cls,msg){
+  const el=document.getElementById('alrt');
+  el.className='alert-box '+cls;
+  document.getElementById('alrt-text').textContent=msg;
+}
+
+function selM(k){
+  ['cpa','tcpa','bcr','bct'].forEach(x=>document.getElementById('mc-'+x).classList.remove('sel'));
+  document.getElementById('mc-'+k).classList.add('sel');
+}
+
+function fmt(m){
+  if(m>9999)return '>99:59';
+  const mm=Math.abs(m)|0,ss=Math.round((Math.abs(m)-mm)*60);
+  return (m<0?'-':'')+mm+':'+(ss<10?'0':'')+ss;
+}
+
+function upd(){
+  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst'),ospd=gv('ospd'),oshdg=gv('oshdg');
+  const curdir=gv('curdir'),curspd=gv('curspd');
+  document.getElementById('voshdg').textContent=String(oshdg).padStart(3,'0')+'°';
+  document.getElementById('vhdg').textContent=String(hdg).padStart(3,'0')+'°';
+  document.getElementById('vspd').textContent=spd+' kn';
+  document.getElementById('vbrg').textContent=String(brg).padStart(3,'0')+'°';
+  document.getElementById('vdst').textContent=dst.toFixed(1)+' NM';
+  document.getElementById('vospd').textContent=ospd+' kn';
+  document.getElementById('vcurdir').textContent=String(curdir).padStart(3,'0')+'°';
+  document.getElementById('vcurspd').textContent=curspd.toFixed(1)+' kn';
+  document.getElementById('si-brg').textContent=String(brg).padStart(3,'0')+'°R';
+  document.getElementById('si-rng').textContent=dst.toFixed(3)+' NM';
+  document.getElementById('si-stw').textContent=spd+' kn';
+  document.getElementById('si-hdg').textContent=String(hdg).padStart(3,'0')+'°';
+
+  const tx=dst*Math.sin(d2r(brg)), ty=dst*Math.cos(d2r(brg));
+  // Heading-line vectors (water-track, no drift) — used only for the solid heading line
+  const ohx=ospd*Math.sin(d2r(oshdg)), ohy=ospd*Math.cos(d2r(oshdg));
+  const thx=spd*Math.sin(d2r(hdg)), thy=spd*Math.cos(d2r(hdg));
+  // Current vector (affects both ships equally — same water mass)
+  const cvx=curspd*Math.sin(d2r(curdir)), cvy=curspd*Math.cos(d2r(curdir));
+  // True COG/SOG vectors (ground-track, with drift) — used for CPA/TCPA/BCR/BCT and dashed vector
+  const ovx=ohx+cvx, ovy=ohy+cvy;
+  const tvx=thx+cvx, tvy=thy+cvy;
+  const rvx=tvx-ovx, rvy=tvy-ovy;
+  const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
+
+  // OS data panel (mirrors the target panel)
+  const osCog=(r2d(Math.atan2(ovx,ovy))+360)%360;
+  const osSog=Math.sqrt(ovx*ovx+ovy*ovy);
+  document.getElementById('os-hdg-disp').textContent=String(oshdg).padStart(3,'0')+'°';
+  document.getElementById('os-stw-disp').textContent=ospd.toFixed(1)+' kn';
+  document.getElementById('os-cog-disp').textContent=osCog.toFixed(1)+'°';
+  document.getElementById('os-sog-disp').textContent=osSog.toFixed(1)+' kn';
+  document.getElementById('os-cur-disp').textContent=String(curdir).padStart(3,'0')+'° / '+curspd.toFixed(1)+'kn';
+
+  const tCog=(r2d(Math.atan2(tvx,tvy))+360)%360;
+  const tSog=Math.sqrt(tvx*tvx+tvy*tvy);
+  document.getElementById('si-cog').textContent=tCog.toFixed(1)+'°';
+  document.getElementById('si-sog').textContent=tSog.toFixed(1)+' kn';
+
+  let tcpa=NaN,cpa=NaN;
+  if(rs2<0.0001){tcpa=0;cpa=dst;}
+  else{tcpa=(-dot/rs2)*60; const ch=tcpa/60; cpa=Math.sqrt((tx+rvx*ch)**2+(ty+rvy*ch)**2);}
+
+  // BCR/BCT: punto donde la trayectoria relativa del blanco cruza la linea
+  // de la proa (o popa) del buque propio -- no el meridiano norte.
+  // Se rota el sistema de coordenadas al marco de referencia del OS
+  // (proa = eje y', estribor = eje x') antes de buscar el cruce con x'=0.
+  let bcr=null,bct=null;
+  {
+    const osrad=d2r(oshdg);
+    const cosO=Math.cos(osrad), sinO=Math.sin(osrad);
+    // posicion del blanco en el marco del OS (x'=estribor, y'=proa)
+    const txp = tx*cosO - ty*sinO;
+    const typ = tx*sinO + ty*cosO;
+    // vector relativo del blanco en el marco del OS
+    const rvxp = rvx*cosO - rvy*sinO;
+    const rvyp = rvx*sinO + rvy*cosO;
+    if(Math.abs(rvxp)>0.001){
+      const tb=-txp/rvxp;
+      if(tb>=0){
+        bct=tb*60;
+        bcr=typ+rvyp*tb; // (+) cruza por proa, (-) cruza por popa
+      }
+    }
+  }
+
+  const cpaS=isNaN(cpa)?'—':cpa.toFixed(3)+' NM';
+  const tcpaS=isNaN(tcpa)?'—':fmt(tcpa);
+  const bcrS=bcr!==null?bcr.toFixed(3)+' NM':'—';
+  const bctS=bct!==null?fmt(bct):'—';
+
+  document.getElementById('si-cpa').textContent=cpaS;
+  document.getElementById('si-tcpa').textContent=tcpaS;
+  document.getElementById('si-bcr').textContent=bcrS;
+  document.getElementById('si-bct').textContent=bctS;
+  document.getElementById('mv-cpa').textContent=isNaN(cpa)?'—':cpa.toFixed(2);
+  document.getElementById('mv-tcpa').textContent=isNaN(tcpa)?'—':(Math.abs(tcpa)>999?'>99':tcpa.toFixed(0));
+  document.getElementById('mv-bcr').textContent=bcr!==null?bcr.toFixed(2):'—';
+  document.getElementById('mv-bct').textContent=bct!==null?(bct>999?'>99':bct.toFixed(0)):'—';
+
+  const cpaEl=document.getElementById('si-cpa');
+  if(!isNaN(cpa)) cpaEl.className='val '+(cpa<0.5?'danger':cpa<2?'warn':'ok');
+
+  if(!isNaN(cpa)&&cpa<0.3&&!isNaN(tcpa)&&tcpa>0&&tcpa<20){
+    alertClass='ab-danger';
+    alertMsg='!! ALARMA CPA — RIESGO COLISION — MANIOBRAR INMEDIATAMENTE !!';
+  } else if(!isNaN(cpa)&&cpa<1&&!isNaN(tcpa)&&tcpa>0&&tcpa<30){
+    alertClass='ab-warn';
+    alertMsg='ATENCION — CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—')+' NM / TCPA '+(!isNaN(tcpa)?tcpa.toFixed(0):'—')+' min — EVALUAR MANIOBRA';
+  } else if(!isNaN(tcpa)&&tcpa<0){
+    alertClass='ab-ok';
+    alertMsg='BLANCO ALEJANDOSE — TCPA NEGATIVO — SITUACION RESUELTA';
+  } else {
+    alertClass='ab-ok';
+    alertMsg='PASO SEGURO — CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—')+' NM — VIGILANCIA NORMAL';
+  }
+
+  if(MODE==='normal'){
+    showAlert(alertClass,alertMsg);
+    document.getElementById('reveal-hint').textContent='';
+  } else if(!revealed){
+    const el=document.getElementById('alrt');
+    el.className='alert-box ab-hidden';
+    document.getElementById('alrt-text').textContent='Analizá la situación...';
+    document.getElementById('reveal-hint').textContent='[ TOCAR PARA REVELAR EVALUACION ]';
+  } else {
+    showAlert(alertClass,alertMsg);
+    document.getElementById('reveal-hint').textContent='';
+  }
+
+  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy);
+}
+
+function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy){
+  const wrap=document.getElementById('radar-wrap');
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  cv.width=W; cv.height=H;
+  const CX=W/2, CY=H/2;
+  const PX=Math.min(W,H)*0.42/RNG;
+
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  // Orientation: rotate the whole picture so that North-Up, Course-Up or Head-Up is on top.
+  // screenRot = the true bearing that should point "up" on screen.
+  let screenRot = 0;
+  if(ORI==='course' || ORI==='head') screenRot = oshdg;
+  ctx.save();
+  ctx.translate(CX,CY);
+  ctx.rotate(d2r(-screenRot));
+  ctx.translate(-CX,-CY);
+
+  // Draw upright text regardless of canvas rotation
+  function txt(x,y,str,font,color){
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(d2r(screenRot));
+    ctx.fillStyle=color; ctx.font=font;
+    ctx.fillText(str,0,0);
+    ctx.restore();
+  }
+
+  // rings
+  const rings=[0.25,0.5,1,2,3,4,6,8,10,12,16,24].filter(r=>r<=RNG&&r>0);
+  ctx.lineWidth=0.5;
+  rings.forEach(r=>{
+    ctx.strokeStyle=r===RNG?'#1a5a2a':'#0a2a0a';
+    ctx.beginPath(); ctx.arc(CX,CY,r*PX,0,Math.PI*2); ctx.stroke();
+    txt(CX+r*PX+2,CY-2,r+' NM','9px Courier New','#1a5a2a');
+  });
+
+  // bearing lines
+  ctx.strokeStyle='#0a2a0a'; ctx.setLineDash([2,6]);
+  for(let a=0;a<360;a+=30){
+    const rad=d2r(a), rr=RNG*PX;
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(CX+Math.sin(rad)*rr,CY-Math.cos(rad)*rr); ctx.stroke();
+    const lx=CX+Math.sin(rad)*rr*0.94, ly=CY-Math.cos(rad)*rr*0.94;
+    txt(lx-10,ly+4,String(a).padStart(3,'0'),'9px Courier New','#1a6a3a');
+  }
+  ctx.setLineDash([]);
+
+  function ts(nx,ny){return[CX+nx*PX,CY-ny*PX];}
+  const proj=VECMIN/60;
+
+  // CPA line + dot — tied to the ARPA vector
+  if(SHOWARPA&&!isNaN(tcpa)&&tcpa>0){
+    const th=tcpa/60;
+    const [cpx,cpy]=ts(tx+rvx*th,ty+rvy*th);
+    ctx.strokeStyle='rgba(255,50,50,0.4)'; ctx.lineWidth=0.8; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(cpx,cpy); ctx.stroke();
+    ctx.setLineDash([]);
+    if(MODE==='normal'||revealed){
+      ctx.fillStyle='#ff3333';
+      ctx.beginPath(); ctx.arc(cpx,cpy,5,0,Math.PI*2); ctx.fill();
+      txt(cpx+7,cpy-3,'CPA '+(!isNaN(cpa)?cpa.toFixed(2):'—'),'bold 9px Courier New','#ff8888');
+    }
+  }
+
+  // BCR circle — tied to the ARPA vector. El punto va sobre la linea real
+  // de la proa (o popa) del OS, no sobre el meridiano norte.
+  if(SHOWARPA&&bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
+    const osrad2=d2r(oshdg);
+    // bcr es la distancia a lo largo de la proa (eje y' del OS); convertir
+    // de vuelta a coordenadas globales (x=Este, y=Norte) antes de proyectar.
+    const bcrGlobalX = bcr*Math.sin(osrad2);
+    const bcrGlobalY = bcr*Math.cos(osrad2);
+    const [bcx,bcy]=ts(bcrGlobalX,bcrGlobalY);
+    ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
+    txt(bcx+8,bcy+4,'BCR','bold 9px Courier New','#44ff88');
+    const bh=bct/60;
+    const [tx0s,ty0s]=ts(tx,ty);
+    const [bpx,bpy]=ts(tx+rvx*bh,ty+rvy*bh);
+    ctx.strokeStyle='rgba(68,255,136,0.25)'; ctx.lineWidth=0.6; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(bpx,bpy); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const [tx0s,ty0s]=ts(tx,ty);
+  const [rvex,rvey]=ts(tx+rvx*proj,ty+rvy*proj);
+  const ang=Math.atan2(rvex-tx0s,-(rvey-ty0s));
+
+  // True COG/SOG vector target (dashed yellow, ground track with drift) — always visible
+  const [tvex,tvey]=ts(tx+tvx*proj,ty+tvy*proj);
+  ctx.strokeStyle='rgba(255,255,0,0.55)'; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tvex,tvey); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Heading line target (solid, fixed to true HDG, water track — gyro compass)
+  const thrad=d2r(hdg);
+  const hlLenT=ts(tx+Math.sin(thrad)*1.4, ty+Math.cos(thrad)*1.4);
+  ctx.strokeStyle='#ffff00'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(hlLenT[0],hlLenT[1]); ctx.stroke();
+
+  // Target dot
+  ctx.fillStyle='#ffff00';
+  ctx.beginPath(); ctx.arc(tx0s,ty0s,7,0,Math.PI*2); ctx.fill();
+  txt(tx0s+9,ty0s-8,'TGT','bold 9px Courier New','#ffff00');
+
+  // Relative vector / ARPA vector (yellow solid thick) — toggled by VECTOR ARPA button
+  if(SHOWARPA){
+    ctx.strokeStyle='#ffff00'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(rvex,rvey); ctx.stroke();
+    ctx.fillStyle='#ffff00';
+    ctx.beginPath();
+    ctx.moveTo(rvex+Math.sin(ang)*7,rvey-Math.cos(ang)*7);
+    ctx.lineTo(rvex+Math.sin(ang-2.4)*4,rvey-Math.cos(ang-2.4)*4);
+    ctx.lineTo(rvex+Math.sin(ang+2.4)*4,rvey-Math.cos(ang+2.4)*4);
+    ctx.closePath(); ctx.fill();
+  }
+
+  // OS true COG/SOG vector (dashed green, ground track with drift) — always visible
+  const [ovex,ovey]=ts(ovx*proj,ovy*proj);
+  ctx.strokeStyle='rgba(0,255,65,0.6)'; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // OS heading line / linea de fe (solid, fixed to true HDG / gyro compass, water track)
+  // Va del centro hasta el borde del radar, como en un radar real. Se puede ocultar
+  // con el boton "LINEA DE FE" para no tapar blancos cercanos al rumbo propio.
+  if(SHOWHEADLINE){
+    const osr=d2r(oshdg);
+    const rr=RNG*PX;
+    const hlLenO=[CX+Math.sin(osr)*rr, CY-Math.cos(osr)*rr];
+    ctx.strokeStyle='#00ff41'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
+  }
+
+  // OS dot (triangle ship, bow points to true heading oshdg)
+  const osr=d2r(oshdg);
+  function rot(px,py){return [CX+px*Math.cos(osr)-py*Math.sin(osr), CY+px*Math.sin(osr)+py*Math.cos(osr)];}
+  ctx.fillStyle='#00ff41';
+  ctx.beginPath();
+  const [p1x,p1y]=rot(0,-9), [p2x,p2y]=rot(-5,5), [p3x,p3y]=rot(5,5);
+  ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.lineTo(p3x,p3y); ctx.closePath(); ctx.fill();
+  txt(CX-7,CY+16,'OS','bold 9px Courier New','#00ff41');
+
+  // compass labels (rotate position with the picture, text stays upright)
+  txt(CX-4,12,'N','bold 10px Courier New','#2a6a3a');
+  txt(CX-3,H-4,'S','bold 10px Courier New','#2a6a3a');
+  txt(W-14,CY+4,'E','bold 10px Courier New','#2a6a3a');
+  txt(4,CY+4,'W','bold 10px Courier New','#2a6a3a');
+
+  // restore rotation before fixed screen overlays (orientation badge, legend)
+  ctx.restore();
+
+  // orientation mode badge, top-left of radar
+  const oriLabel = ORI==='north'?'NORTH UP':(ORI==='course'?'COURSE UP':'HEAD UP');
+  ctx.fillStyle='#0a2a0a'; ctx.fillRect(6,6,76,16);
+  ctx.strokeStyle='#1a5a2a'; ctx.lineWidth=1; ctx.strokeRect(6,6,76,16);
+  ctx.fillStyle='#44ff88'; ctx.font='bold 9px Courier New';
+  ctx.fillText(oriLabel,12,18);
+
+  // legend bottom left
+  const leg=[
+    {col:'#00ff41',lbl:'OS — propio'},
+    {col:'#ffff00',lbl:'TGT — blanco'},
+    {col:'#ffff00',lbl:'━ HDG (aguja)'},
+    {col:'#ffff00',lbl:'┄ COG/SOG (deriva)'},
+    ...(SHOWARPA?[
+      {col:'#ffff00',lbl:'━ Vmr (relativo/ARPA)'},
+      {col:'#ff3333',lbl:'● CPA'},
+      {col:'#44ff88',lbl:'○ BCR'},
+    ]:[]),
+  ];
+  ctx.font='9px Courier New';
+  let lx=8,ly=H-6;
+  leg.forEach(l=>{
+    ctx.fillStyle=l.col; ctx.fillRect(lx,ly-8,8,8);
+    ctx.fillStyle='#2a6a3a'; ctx.fillText(l.lbl,lx+10,ly);
+    lx+=ctx.measureText(l.lbl).width+18;
+    if(lx>cv.width-100){lx=8;ly-=12;}
+  });
+}
+
+function tick(){
+  const n=new Date();
+  document.getElementById('clk').textContent=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+}
+setInterval(tick,10000); tick();
+
+function resize(){upd();}
+window.addEventListener('resize',resize);
+upd();
+</script>
+</body>
+</html>
