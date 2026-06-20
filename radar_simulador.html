@@ -411,8 +411,28 @@ function upd(){
   if(rs2<0.0001){tcpa=0;cpa=dst;}
   else{tcpa=(-dot/rs2)*60; const ch=tcpa/60; cpa=Math.sqrt((tx+rvx*ch)**2+(ty+rvy*ch)**2);}
 
+  // BCR/BCT: punto donde la trayectoria relativa del blanco cruza la linea
+  // de la proa (o popa) del buque propio -- no el meridiano norte.
+  // Se rota el sistema de coordenadas al marco de referencia del OS
+  // (proa = eje y', estribor = eje x') antes de buscar el cruce con x'=0.
   let bcr=null,bct=null;
-  if(Math.abs(rvx)>0.001){const tb=-tx/rvx; if(tb>=0){bct=tb*60;bcr=ty+rvy*tb;}}
+  {
+    const osrad=d2r(oshdg);
+    const cosO=Math.cos(osrad), sinO=Math.sin(osrad);
+    // posicion del blanco en el marco del OS (x'=estribor, y'=proa)
+    const txp = tx*cosO - ty*sinO;
+    const typ = tx*sinO + ty*cosO;
+    // vector relativo del blanco en el marco del OS
+    const rvxp = rvx*cosO - rvy*sinO;
+    const rvyp = rvx*sinO + rvy*cosO;
+    if(Math.abs(rvxp)>0.001){
+      const tb=-txp/rvxp;
+      if(tb>=0){
+        bct=tb*60;
+        bcr=typ+rvyp*tb; // (+) cruza por proa, (-) cruza por popa
+      }
+    }
+  }
 
   const cpaS=isNaN(cpa)?'—':cpa.toFixed(3)+' NM';
   const tcpaS=isNaN(tcpa)?'—':fmt(tcpa);
@@ -525,9 +545,15 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     }
   }
 
-  // BCR circle — tied to the ARPA vector
+  // BCR circle — tied to the ARPA vector. El punto va sobre la linea real
+  // de la proa (o popa) del OS, no sobre el meridiano norte.
   if(SHOWARPA&&bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
-    const [bcx,bcy]=ts(0,bcr);
+    const osrad2=d2r(oshdg);
+    // bcr es la distancia a lo largo de la proa (eje y' del OS); convertir
+    // de vuelta a coordenadas globales (x=Este, y=Norte) antes de proyectar.
+    const bcrGlobalX = bcr*Math.sin(osrad2);
+    const bcrGlobalY = bcr*Math.cos(osrad2);
+    const [bcx,bcy]=ts(bcrGlobalX,bcrGlobalY);
     ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
     txt(bcx+8,bcy+4,'BCR','bold 9px Courier New','#44ff88');
