@@ -325,7 +325,7 @@ function setRng(r){
 
 function setVec(m){
   VECMIN=m;
-  document.querySelectorAll('#app .cfg .rng-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#vec-btns .rng-btn').forEach(b=>b.classList.remove('on'));
   event.target.classList.add('on');
   document.getElementById('vec-min-lbl').textContent=m;
   document.getElementById('vec-label').textContent='VECTOR '+m+'min';
@@ -479,10 +479,10 @@ function upd(){
     document.getElementById('reveal-hint').textContent='';
   }
 
-  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy);
+  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy,osCog);
 }
 
-function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy){
+function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy,osCog){
   const wrap=document.getElementById('radar-wrap');
   const W=wrap.clientWidth, H=wrap.clientHeight;
   cv.width=W; cv.height=H;
@@ -492,9 +492,12 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
   // Orientation: rotate the whole picture so that North-Up, Course-Up or Head-Up is on top.
-  // screenRot = the true bearing that should point "up" on screen.
+  // screenRot = la marcacion verdadera que debe apuntar "arriba" en pantalla.
+  // HEAD UP usa el HDG (rumbo de aguja, proa real del buque).
+  // COURSE UP usa el COG (rumbo sobre el fondo, course over ground, con deriva).
   let screenRot = 0;
-  if(ORI==='course' || ORI==='head') screenRot = oshdg;
+  if(ORI==='head') screenRot = oshdg;
+  else if(ORI==='course') screenRot = osCog;
   ctx.save();
   ctx.translate(CX,CY);
   ctx.rotate(d2r(-screenRot));
