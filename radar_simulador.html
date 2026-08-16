@@ -92,14 +92,7 @@ canvas{display:block}
 
   <div class="main">
     <div class="left">
-      <div class="sc-bar" style="background:#0a1505">
-        <label>FUENTE DE DATOS OS:</label>
-        <button class="sc on" id="src-manual" onclick="setSource('manual')">MANUAL</button>
-        <button class="sc" id="src-live" onclick="setSource('live')">VIVO (Virtual Sailor)</button>
-        <span id="live-status" style="margin-left:14px;font-size:9px;color:#664400">○ Desconectado</span>
-        <span id="live-data" style="margin-left:10px;font-size:9px;color:#336633"></span>
-      </div>
-      <div class="sc-bar">
+            <div class="sc-bar">
         <label>ESCENARIO:</label>
         <button class="sc on" onclick="sc('maersk')">MAERSK LABERINTO</button>
         <button class="sc" onclick="sc('cruce')">Cruce peligroso</button>
@@ -113,8 +106,6 @@ canvas{display:block}
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
         <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
         <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
-        <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
-        <button class="sc on" id="stab-toggle" onclick="toggleStab()" style="margin-left:6px;border-color:#00cc44">REF: AGUA</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
           <label style="font-size:9px;color:#336633">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
@@ -183,25 +174,15 @@ canvas{display:block}
     </div>
 
     <div class="sidebar">
-            <div class="tgt-block" style="border-bottom:1px solid #0f2a0f;padding-bottom:6px;margin-bottom:4px">
-        <div class="tgt-label" style="color:#44ff88">OS — BUQUE PROPIO</div>
-        <div class="tgt-name" id="os-name">OS</div>
-        <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="os-hdg-disp">000°</span></div>
-        <div class="tgt-row"><span class="lbl">STW (agua)</span><span class="val" id="os-stw-disp">10.0 kn</span></div>
-        <div class="tgt-row"><span class="lbl">COG (fondo)</span><span class="val" id="os-cog-disp" style="color:#aaffaa">000°</span></div>
-        <div class="tgt-row"><span class="lbl">SOG (fondo)</span><span class="val" id="os-sog-disp" style="color:#aaffaa">10.0 kn</span></div>
-        <div class="tgt-row"><span class="lbl">CORRIENTE</span><span class="val" id="os-cur-disp" style="font-size:11px">000° / 0.0kn</span></div>
-      </div>
-
-<div class="tgt-block">
+      <div class="tgt-block">
         <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
         <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
         <div class="tgt-row"><span class="lbl">BRG</span><span class="val" id="si-brg">060°R</span></div>
         <div class="tgt-row"><span class="lbl">RNG</span><span class="val" id="si-rng">3.000 NM</span></div>
         <div class="tgt-row"><span class="lbl">STW</span><span class="val" id="si-stw">11 kn</span></div>
-        <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="si-hdg">060°</span></div>
-        <div class="tgt-row"><span class="lbl" id="lbl-cog">COG (fondo)</span><span class="val" id="si-cog" style="color:#aaffaa">060°</span></div>
-        <div class="tgt-row"><span class="lbl" id="lbl-sog">SOG (fondo)</span><span class="val" id="si-sog" style="color:#aaffaa">11 kn</span></div>
+        <div class="tgt-row"><span class="lbl">HDG</span><span class="val" id="si-hdg">060°</span></div>
+        <div class="tgt-row"><span class="lbl">COG</span><span class="val" id="si-cog" style="color:#aaffaa">060°</span></div>
+        <div class="tgt-row"><span class="lbl">SOG</span><span class="val" id="si-sog" style="color:#aaffaa">11 kn</span></div>
         <div class="tgt-row"><span class="lbl">CPA</span><span class="val danger" id="si-cpa">—</span></div>
         <div class="tgt-row"><span class="lbl">TCPA</span><span class="val" id="si-tcpa">—</span></div>
         <div class="tgt-row"><span class="lbl">BCR</span><span class="val" id="si-bcr">—</span></div>
@@ -271,7 +252,7 @@ canvas{display:block}
 <script>
 const cv=document.getElementById('rc');
 const ctx=cv.getContext('2d');
-let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true, SHOWHEADLINE=true, STABMODE='water';
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true;
 let SOURCE='manual'; // 'manual' or 'live'
 let liveData={lat:null,lon:null,sog:null,cog:null,hdg:null,stw:null,conectado_vs:false,ultima_actualizacion:0};
 let ws=null;
@@ -302,45 +283,7 @@ function sc(name){
   upd();
 }
 
-
-function toggleHeadline(){
-  SHOWHEADLINE=!SHOWHEADLINE;
-  const btn=document.getElementById('headline-toggle');
-  btn.textContent='LINEA DE FE: '+(SHOWHEADLINE?'ON':'OFF');
-  btn.classList.toggle('on',SHOWHEADLINE);
-  upd();
-}
-
-function toggleStab(){
-  STABMODE = STABMODE==='water' ? 'ground' : 'water';
-  const btn=document.getElementById('stab-toggle');
-  const isWater = STABMODE==='water';
-  btn.textContent = 'REF: '+(isWater?'AGUA':'FONDO');
-  btn.style.borderColor = isWater ? '#00cc44' : '#ffaa00';
-  btn.style.color = isWater ? '#00ff41' : '#ffaa00';
-  btn.style.background = isWater ? '#0a1a0a' : '#1a1000';
-  upd();
-}
 function toggleArpa(){
-function toggleHeadline(){
-  SHOWHEADLINE=!SHOWHEADLINE;
-  const btn=document.getElementById('headline-toggle');
-  btn.textContent='LINEA DE FE: '+(SHOWHEADLINE?'ON':'OFF');
-  btn.classList.toggle('on',SHOWHEADLINE);
-  upd();
-}
-
-function toggleStab(){
-  STABMODE = STABMODE==='water' ? 'ground' : 'water';
-  const btn=document.getElementById('stab-toggle');
-  const isWater = STABMODE==='water';
-  btn.textContent = 'REF: '+(isWater?'AGUA':'FONDO');
-  btn.style.borderColor = isWater ? '#00cc44' : '#ffaa00';
-  btn.style.color = isWater ? '#00ff41' : '#ffaa00';
-  btn.style.background = isWater ? '#0a1a0a' : '#1a1000';
-  upd();
-}
-
   SHOWARPA=!SHOWARPA;
   const btn=document.getElementById('arpa-toggle');
   btn.textContent='VECTOR ARPA: '+(SHOWARPA?'ON':'OFF');
@@ -488,18 +431,6 @@ function upd(){
   }
 
   document.getElementById('voshdg').textContent=String(Math.round(oshdg)).padStart(3,'0')+'°';
-
-  // OS data panel updates
-  const osCog=(r2d(Math.atan2(ovx,ovy))+360)%360;
-  const osSog=Math.sqrt(ovx*ovx+ovy*ovy);
-  if(document.getElementById('os-hdg-disp')) {
-    document.getElementById('os-hdg-disp').textContent=String(Math.round(oshdg)).padStart(3,'0')+'°';
-    document.getElementById('os-stw-disp').textContent=ospd.toFixed(1)+' kn';
-    document.getElementById('os-cog-disp').textContent=osCog.toFixed(1)+'°';
-    document.getElementById('os-sog-disp').textContent=osSog.toFixed(1)+' kn';
-    document.getElementById('os-cur-disp').textContent=String(curdir).padStart(3,'0')+'° / '+curspd.toFixed(1)+'kn';
-  }
-
   document.getElementById('vhdg').textContent=String(hdg).padStart(3,'0')+'°';
   document.getElementById('vspd').textContent=spd+' kn';
   document.getElementById('vbrg').textContent=String(brg).padStart(3,'0')+'°';
@@ -524,30 +455,9 @@ function upd(){
   const rvx=tvx-ovx, rvy=tvy-ovy;
   const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
 
-
-  // Vector del blanco segun modo estabilizacion
-  const dispTVX = STABMODE==='water' ? thx : tvx;
-  const dispTVY = STABMODE==='water' ? thy : tvy;
-  const tCog=(r2d(Math.atan2(dispTVX,dispTVY))+360)%360;
-  const tSog=Math.sqrt(dispTVX*dispTVX+dispTVY*dispTVY);
-
+  const tCog=(r2d(Math.atan2(tvx,tvy))+360)%360;
+  const tSog=Math.sqrt(tvx*tvx+tvy*tvy);
   document.getElementById('si-cog').textContent=tCog.toFixed(1)+'°';
-
-  // Update target vector labels based on stabilization mode
-  const cogLbl = document.getElementById('lbl-cog');
-  const sogLbl = document.getElementById('lbl-sog');
-  if(cogLbl) {
-    if(STABMODE==='water'){
-      cogLbl.textContent='STW (agua)'; sogLbl.textContent='SOG (agua)';
-      document.getElementById('si-cog').style.color='#64ffb4';
-      document.getElementById('si-sog').style.color='#64ffb4';
-    } else {
-      cogLbl.textContent='COG (fondo)'; sogLbl.textContent='SOG (fondo)';
-      document.getElementById('si-cog').style.color='#ffff44';
-      document.getElementById('si-sog').style.color='#ffff44';
-    }
-  }
-
   document.getElementById('si-sog').textContent=tSog.toFixed(1)+' kn';
 
   let tcpa=NaN,cpa=NaN;
@@ -686,12 +596,9 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   const [rvex,rvey]=ts(tx+rvx*proj,ty+rvy*proj);
   const ang=Math.atan2(rvex-tx0s,-(rvey-ty0s));
 
-  // Vector del blanco segun modo estabilizacion (calculado dentro de drawRadar)
-  const dispTVX = typeof STABMODE!=='undefined' && STABMODE==='water' ? thx : tvx;
-  const dispTVY = typeof STABMODE!=='undefined' && STABMODE==='water' ? thy : tvy;
-  const [tvex,tvey]=ts(tx+dispTVX*proj,ty+dispTVY*proj);
-  const vecColor=STABMODE==='water'?'rgba(100,255,180,0.6)':'rgba(255,255,0,0.6)';
-  ctx.strokeStyle=vecColor; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
+  // True COG/SOG vector target (dashed yellow, ground track with drift) — always visible
+  const [tvex,tvey]=ts(tx+tvx*proj,ty+tvy*proj);
+  ctx.strokeStyle='rgba(255,255,0,0.55)'; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
   ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tvex,tvey); ctx.stroke();
   ctx.setLineDash([]);
 
@@ -726,12 +633,6 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
 
   // OS heading line (solid, fixed to true HDG / gyro compass, water track)
   const osr=d2r(oshdg);
-  if(SHOWHEADLINE){
-  const rr2=RNG*PX;
-  const hlLenO2=[CX+Math.sin(osr)*rr2,CY-Math.cos(osr)*rr2];
-  ctx.strokeStyle='#00ff41'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO2[0],hlLenO2[1]); ctx.stroke();
-  }
   const hlLenO=[CX+Math.sin(osr)*RNG*PX*0.18, CY-Math.cos(osr)*RNG*PX*0.18];
   ctx.strokeStyle='#00ff41'; ctx.lineWidth=1.2;
   ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
