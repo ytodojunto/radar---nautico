@@ -27,7 +27,6 @@ canvas{display:block}
 .sl-lbl{display:flex;justify-content:space-between;font-size:9px;color:#336633}
 .sl-lbl span{color:#ffff00;font-weight:bold}
 .sl input[type=range]{width:100%;height:12px;accent-color:#00ff41;cursor:pointer}
-.sl input[type=range]:disabled{accent-color:#336633;cursor:not-allowed;opacity:.5}
 .mode-col{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
 .mode-btn{padding:4px 10px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #336633;background:#000;color:#336633;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
 .mode-btn:hover{border-color:#ffff00;color:#ffff00}
@@ -92,9 +91,10 @@ canvas{display:block}
 
   <div class="main">
     <div class="left">
-            <div class="sc-bar">
+      <div class="sc-bar">
         <label>ESCENARIO:</label>
         <button class="sc on" onclick="sc('maersk')">MAERSK LABERINTO</button>
+        <button class="sc" onclick="sc('ladyj')">LADY J</button>
         <button class="sc" onclick="sc('cruce')">Cruce peligroso</button>
         <button class="sc" onclick="sc('frente')">Frente a frente</button>
         <button class="sc" onclick="sc('alcance')">Alcance</button>
@@ -106,6 +106,7 @@ canvas{display:block}
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
         <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
         <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
+        <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
           <label style="font-size:9px;color:#336633">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
@@ -121,6 +122,18 @@ canvas{display:block}
           </div>
           <span style="font-size:8px;color:#336633">NM</span>
         </div>
+      </div>
+      <div class="sc-bar" style="border-top:1px solid #0f2a0f">
+        <label style="font-size:9px;color:#336633">VECTOR (min):</label>
+        <div class="rng-btns" id="vec-btns">
+          <button class="rng-btn" onclick="setVec(3)">3</button>
+          <button class="rng-btn on" id="vbtn6" onclick="setVec(6)">6</button>
+          <button class="rng-btn" onclick="setVec(10)">10</button>
+          <button class="rng-btn" onclick="setVec(15)">15</button>
+          <button class="rng-btn" onclick="setVec(20)">20</button>
+          <button class="rng-btn" onclick="setVec(30)">30</button>
+        </div>
+        <span style="font-size:8px;color:#336633">min — proyección del vector COG/SOG y ARPA</span>
       </div>
 
 
@@ -174,6 +187,16 @@ canvas{display:block}
     </div>
 
     <div class="sidebar">
+      <div class="tgt-block">
+        <div class="tgt-label" style="color:#44ff88">OS — BUQUE PROPIO</div>
+        <div class="tgt-name" id="os-name">OS</div>
+        <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="os-hdg-disp">000°</span></div>
+        <div class="tgt-row"><span class="lbl">STW (agua)</span><span class="val" id="os-stw-disp">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">COG (fondo)</span><span class="val" id="os-cog-disp" style="color:#aaffaa">000°</span></div>
+        <div class="tgt-row"><span class="lbl">SOG (fondo)</span><span class="val" id="os-sog-disp" style="color:#aaffaa">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">CORRIENTE</span><span class="val" id="os-cur-disp">000° / 0.0kn</span></div>
+      </div>
+
       <div class="tgt-block">
         <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
         <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
@@ -233,17 +256,6 @@ canvas{display:block}
         <span>VEC: TRUE-S <span id="vec-min-lbl">6</span>min</span>
         <span>CPA ALM: 0.5 NM / 10 min</span>
         <span>OS HDG: 000° — GYRO1</span>
-        <div style="margin-top:4px;font-size:8px;color:#336633">
-          <div style="margin-bottom:2px">VECTOR:</div>
-          <div style="display:flex;gap:3px">
-            <button class="rng-btn" onclick="setVec(3)">3m</button>
-            <button class="rng-btn" onclick="setVec(6)" id="vbtn6" style="border-color:#00ff41;color:#00ff41">6m</button>
-            <button class="rng-btn" onclick="setVec(10)">10m</button>
-            <button class="rng-btn" onclick="setVec(15)">15m</button>
-            <button class="rng-btn" onclick="setVec(20)">20m</button>
-            <button class="rng-btn" onclick="setVec(30)">30m</button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -252,10 +264,7 @@ canvas{display:block}
 <script>
 const cv=document.getElementById('rc');
 const ctx=cv.getContext('2d');
-let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true;
-let SOURCE='manual'; // 'manual' or 'live'
-let liveData={lat:null,lon:null,sog:null,cog:null,hdg:null,stw:null,conectado_vs:false,ultima_actualizacion:0};
-let ws=null;
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true, SHOWHEADLINE=true;
 let alertClass='ab-hidden', alertMsg='—';
 
 function d2r(d){return d*Math.PI/180}
@@ -291,60 +300,12 @@ function toggleArpa(){
   upd();
 }
 
-function setSource(src){
-  SOURCE=src;
-  document.getElementById('src-manual').classList.toggle('on',src==='manual');
-  document.getElementById('src-live').classList.toggle('on',src==='live');
-  // enable/disable manual OS sliders
-  const lock=(src==='live');
-  ['oshdg','ospd','curdir','curspd'].forEach(id=>{
-    document.getElementById(id).disabled=lock;
-  });
-  if(src==='live' && !ws){
-    connectWS();
-  }
+function toggleHeadline(){
+  SHOWHEADLINE=!SHOWHEADLINE;
+  const btn=document.getElementById('headline-toggle');
+  btn.textContent='LINEA DE FE: '+(SHOWHEADLINE?'ON':'OFF');
+  btn.classList.toggle('on',SHOWHEADLINE);
   upd();
-}
-
-function connectWS(){
-  try{
-    ws=new WebSocket('ws://localhost:8765');
-    ws.onopen=()=>{
-      document.getElementById('live-status').textContent='● Conectando al puente...';
-      document.getElementById('live-status').style.color='#ffaa00';
-    };
-    ws.onmessage=(ev)=>{
-      try{
-        liveData=JSON.parse(ev.data);
-        const ok=liveData.conectado_vs;
-        const st=document.getElementById('live-status');
-        if(ok){
-          st.textContent='● VIVO — recibiendo datos de Virtual Sailor';
-          st.style.color='#44ff88';
-        } else {
-          st.textContent='○ Puente activo, esperando datos de Virtual Sailor...';
-          st.style.color='#ffaa00';
-        }
-        const dd=document.getElementById('live-data');
-        if(liveData.lat!==null&&liveData.lon!==null){
-          dd.textContent='LAT '+liveData.lat.toFixed(4)+' / LON '+liveData.lon.toFixed(4);
-        }
-        if(SOURCE==='live') upd();
-      }catch(e){}
-    };
-    ws.onclose=()=>{
-      document.getElementById('live-status').textContent='○ Desconectado del puente';
-      document.getElementById('live-status').style.color='#664400';
-      ws=null;
-      if(SOURCE==='live') setTimeout(connectWS,3000);
-    };
-    ws.onerror=()=>{
-      document.getElementById('live-status').textContent='✕ Sin conexión — ¿está corriendo puente_nmea.py?';
-      document.getElementById('live-status').style.color='#ff4444';
-    };
-  }catch(e){
-    document.getElementById('live-status').textContent='✕ Error: '+e.message;
-  }
 }
 
 function setOri(mode){
@@ -364,7 +325,7 @@ function setRng(r){
 
 function setVec(m){
   VECMIN=m;
-  document.querySelectorAll('#app .cfg .rng-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#vec-btns .rng-btn').forEach(b=>b.classList.remove('on'));
   event.target.classList.add('on');
   document.getElementById('vec-min-lbl').textContent=m;
   document.getElementById('vec-label').textContent='VECTOR '+m+'min';
@@ -406,37 +367,15 @@ function fmt(m){
 }
 
 function upd(){
-  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst');
-  let ospd,oshdg,curdir,curspd;
-
-  if(SOURCE==='live' && liveData.conectado_vs && liveData.hdg!==null){
-    oshdg = liveData.hdg;
-    ospd = (liveData.stw!==null) ? liveData.stw : (liveData.sog||0);
-    // Derive an equivalent current vector from the difference between
-    // water-track (HDG/STW) and ground-track (COG/SOG) reported by VS.
-    if(liveData.cog!==null && liveData.sog!==null){
-      const ohx0=ospd*Math.sin(d2r(oshdg)), ohy0=ospd*Math.cos(d2r(oshdg));
-      const ogx0=liveData.sog*Math.sin(d2r(liveData.cog)), ogy0=liveData.sog*Math.cos(d2r(liveData.cog));
-      const cdx=ogx0-ohx0, cdy=ogy0-ohy0;
-      curdir=(r2d(Math.atan2(cdx,cdy))+360)%360;
-      curspd=Math.sqrt(cdx*cdx+cdy*cdy);
-    } else {
-      curdir=0; curspd=0;
-    }
-    sv('oshdg',Math.round(oshdg)); sv('ospd',Math.round(ospd));
-    sv('curdir',Math.round(curdir)); sv('curspd',curspd.toFixed(1));
-  } else {
-    ospd=gv('ospd'); oshdg=gv('oshdg');
-    curdir=gv('curdir'); curspd=gv('curspd');
-  }
-
-  document.getElementById('voshdg').textContent=String(Math.round(oshdg)).padStart(3,'0')+'°';
+  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst'),ospd=gv('ospd'),oshdg=gv('oshdg');
+  const curdir=gv('curdir'),curspd=gv('curspd');
+  document.getElementById('voshdg').textContent=String(oshdg).padStart(3,'0')+'°';
   document.getElementById('vhdg').textContent=String(hdg).padStart(3,'0')+'°';
   document.getElementById('vspd').textContent=spd+' kn';
   document.getElementById('vbrg').textContent=String(brg).padStart(3,'0')+'°';
   document.getElementById('vdst').textContent=dst.toFixed(1)+' NM';
-  document.getElementById('vospd').textContent=ospd.toFixed(1)+' kn';
-  document.getElementById('vcurdir').textContent=String(Math.round(curdir)).padStart(3,'0')+'°';
+  document.getElementById('vospd').textContent=ospd+' kn';
+  document.getElementById('vcurdir').textContent=String(curdir).padStart(3,'0')+'°';
   document.getElementById('vcurspd').textContent=curspd.toFixed(1)+' kn';
   document.getElementById('si-brg').textContent=String(brg).padStart(3,'0')+'°R';
   document.getElementById('si-rng').textContent=dst.toFixed(3)+' NM';
@@ -455,6 +394,15 @@ function upd(){
   const rvx=tvx-ovx, rvy=tvy-ovy;
   const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
 
+  // OS data panel (mirrors the target panel)
+  const osCog=(r2d(Math.atan2(ovx,ovy))+360)%360;
+  const osSog=Math.sqrt(ovx*ovx+ovy*ovy);
+  document.getElementById('os-hdg-disp').textContent=String(oshdg).padStart(3,'0')+'°';
+  document.getElementById('os-stw-disp').textContent=ospd.toFixed(1)+' kn';
+  document.getElementById('os-cog-disp').textContent=osCog.toFixed(1)+'°';
+  document.getElementById('os-sog-disp').textContent=osSog.toFixed(1)+' kn';
+  document.getElementById('os-cur-disp').textContent=String(curdir).padStart(3,'0')+'° / '+curspd.toFixed(1)+'kn';
+
   const tCog=(r2d(Math.atan2(tvx,tvy))+360)%360;
   const tSog=Math.sqrt(tvx*tvx+tvy*tvy);
   document.getElementById('si-cog').textContent=tCog.toFixed(1)+'°';
@@ -464,8 +412,28 @@ function upd(){
   if(rs2<0.0001){tcpa=0;cpa=dst;}
   else{tcpa=(-dot/rs2)*60; const ch=tcpa/60; cpa=Math.sqrt((tx+rvx*ch)**2+(ty+rvy*ch)**2);}
 
+  // BCR/BCT: punto donde la trayectoria relativa del blanco cruza la linea
+  // de la proa (o popa) del buque propio -- no el meridiano norte.
+  // Se rota el sistema de coordenadas al marco de referencia del OS
+  // (proa = eje y', estribor = eje x') antes de buscar el cruce con x'=0.
   let bcr=null,bct=null;
-  if(Math.abs(rvx)>0.001){const tb=-tx/rvx; if(tb>=0){bct=tb*60;bcr=ty+rvy*tb;}}
+  {
+    const osrad=d2r(oshdg);
+    const cosO=Math.cos(osrad), sinO=Math.sin(osrad);
+    // posicion del blanco en el marco del OS (x'=estribor, y'=proa)
+    const txp = tx*cosO - ty*sinO;
+    const typ = tx*sinO + ty*cosO;
+    // vector relativo del blanco en el marco del OS
+    const rvxp = rvx*cosO - rvy*sinO;
+    const rvyp = rvx*sinO + rvy*cosO;
+    if(Math.abs(rvxp)>0.001){
+      const tb=-txp/rvxp;
+      if(tb>=0){
+        bct=tb*60;
+        bcr=typ+rvyp*tb; // (+) cruza por proa, (-) cruza por popa
+      }
+    }
+  }
 
   const cpaS=isNaN(cpa)?'—':cpa.toFixed(3)+' NM';
   const tcpaS=isNaN(tcpa)?'—':fmt(tcpa);
@@ -511,10 +479,10 @@ function upd(){
     document.getElementById('reveal-hint').textContent='';
   }
 
-  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy);
+  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy,osCog);
 }
 
-function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy){
+function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy,osCog){
   const wrap=document.getElementById('radar-wrap');
   const W=wrap.clientWidth, H=wrap.clientHeight;
   cv.width=W; cv.height=H;
@@ -524,9 +492,12 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
   // Orientation: rotate the whole picture so that North-Up, Course-Up or Head-Up is on top.
-  // screenRot = the true bearing that should point "up" on screen.
+  // screenRot = la marcacion verdadera que debe apuntar "arriba" en pantalla.
+  // HEAD UP usa el HDG (rumbo de aguja, proa real del buque).
+  // COURSE UP usa el COG (rumbo sobre el fondo, course over ground, con deriva).
   let screenRot = 0;
-  if(ORI==='course' || ORI==='head') screenRot = oshdg;
+  if(ORI==='head') screenRot = oshdg;
+  else if(ORI==='course') screenRot = osCog;
   ctx.save();
   ctx.translate(CX,CY);
   ctx.rotate(d2r(-screenRot));
@@ -578,9 +549,15 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     }
   }
 
-  // BCR circle — tied to the ARPA vector
+  // BCR circle — tied to the ARPA vector. El punto va sobre la linea real
+  // de la proa (o popa) del OS, no sobre el meridiano norte.
   if(SHOWARPA&&bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
-    const [bcx,bcy]=ts(0,bcr);
+    const osrad2=d2r(oshdg);
+    // bcr es la distancia a lo largo de la proa (eje y' del OS); convertir
+    // de vuelta a coordenadas globales (x=Este, y=Norte) antes de proyectar.
+    const bcrGlobalX = bcr*Math.sin(osrad2);
+    const bcrGlobalY = bcr*Math.cos(osrad2);
+    const [bcx,bcy]=ts(bcrGlobalX,bcrGlobalY);
     ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
     txt(bcx+8,bcy+4,'BCR','bold 9px Courier New','#44ff88');
@@ -631,19 +608,25 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
   ctx.setLineDash([]);
 
-  // OS heading line (solid, fixed to true HDG / gyro compass, water track)
-  const osr=d2r(oshdg);
-  const hlLenO=[CX+Math.sin(osr)*RNG*PX*0.18, CY-Math.cos(osr)*RNG*PX*0.18];
-  ctx.strokeStyle='#00ff41'; ctx.lineWidth=1.2;
-  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
+  // OS heading line / linea de fe (solid, fixed to true HDG / gyro compass, water track)
+  // Va del centro hasta el borde del radar, como en un radar real. Se puede ocultar
+  // con el boton "LINEA DE FE" para no tapar blancos cercanos al rumbo propio.
+  if(SHOWHEADLINE){
+    const osr=d2r(oshdg);
+    const rr=RNG*PX;
+    const hlLenO=[CX+Math.sin(osr)*rr, CY-Math.cos(osr)*rr];
+    ctx.strokeStyle='#00ff41'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
+  }
 
   // OS dot (triangle ship, bow points to true heading oshdg)
+  const osr=d2r(oshdg);
   function rot(px,py){return [CX+px*Math.cos(osr)-py*Math.sin(osr), CY+px*Math.sin(osr)+py*Math.cos(osr)];}
   ctx.fillStyle='#00ff41';
   ctx.beginPath();
   const [p1x,p1y]=rot(0,-9), [p2x,p2y]=rot(-5,5), [p3x,p3y]=rot(5,5);
   ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.lineTo(p3x,p3y); ctx.closePath(); ctx.fill();
-  txt(CX-7,CY+16,SOURCE==='live'?'OS ▶VIVO':'OS','bold 9px Courier New','#00ff41');
+  txt(CX-7,CY+16,'OS','bold 9px Courier New','#00ff41');
 
   // compass labels (rotate position with the picture, text stays upright)
   txt(CX-4,12,'N','bold 10px Courier New','#2a6a3a');
