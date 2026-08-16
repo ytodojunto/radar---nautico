@@ -69,6 +69,22 @@ html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monos
 .tag-danger{background:#2a0000;color:#ff4444;border:1px solid #ff4444}
 .tag-warn{background:#1a1000;color:#ffaa00;border:1px solid #ffaa00}
 .tag-ok{background:#001a06;color:#44ff88;border:1px solid #44ff88}
+.interactive-wrap{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;margin-top:8px}
+.canvas-box{background:#020a02;border:1px solid #1a4a1a;border-radius:4px;padding:10px;flex-shrink:0}
+.controls-box{flex:1;min-width:240px}
+.slider-row{margin-bottom:13px}
+.slider-row .sr-label{display:flex;justify-content:space-between;font-size:10px;color:#336633;letter-spacing:.5px;margin-bottom:5px}
+.slider-row .sr-label .sval{color:#ffff00;font-weight:bold}
+.slider-row input[type=range]{width:100%;accent-color:#00ff41;background:transparent}
+.mode-toggle{display:inline-flex;border:1px solid #336633;border-radius:2px;overflow:hidden;margin-bottom:14px}
+.mode-btn{padding:7px 16px;font-size:11px;font-family:'Courier New',monospace;background:#000;color:#336633;border:none;cursor:pointer;letter-spacing:.5px}
+.mode-btn.active{background:#00ff41;color:#000;font-weight:bold}
+.readout-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.readout-item{background:#030d03;border:1px solid #1a4a1a;border-radius:3px;padding:8px 10px}
+.readout-item .rk{font-size:9px;color:#336633;letter-spacing:.5px;margin-bottom:2px}
+.readout-item .rv{font-size:17px;font-weight:bold;color:#ffff00}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:10px;color:#aaffaa}
+.legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -127,6 +143,29 @@ html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monos
         <li><span class="rule-num">▶</span><span>El radar no muestra lo que está pasando — muestra <span class="highlight">lo que va a pasar.</span> Esa es su ventaja fundamental.</span></li>
         <li><span class="rule-num">▶</span><span>La COLREGS Regla 7 obliga a usar todos los medios disponibles para evaluar riesgo, y menciona explícitamente el radar.</span></li>
         <li><span class="rule-num">▶</span><span>Los valores CPA, TCPA, BCR y BCT son calculados automáticamente por el ARPA a partir del <span class="highlight">vector de movimiento relativo</span> del blanco.</span></li>
+      </ul>
+    </div>
+
+    <!-- SLIDE A: Movimiento relativo vs verdadero -->
+    <div class="slide" id="sA">
+      <div class="slide-title">DOS CÁLCULOS, NO UNO</div>
+      <div class="slide-subtitle">Qué necesita el ARPA para cada tipo de dato</div>
+      <div class="big-def">No todo lo que muestra el ARPA se calcula de la misma manera. Antes de entrar en CPA, TCPA, BCR y BCT hay que distinguir <span class="highlight">dos bloques</span> bien diferentes de cálculo.</div>
+      <div class="intro-grid" style="margin-bottom:16px">
+        <div class="intro-card" style="border-color:#44aaff">
+          <div class="ic-num">BLOQUE 1</div>
+          <div class="ic-title" style="color:#44aaff">MOVIMIENTO RELATIVO</div>
+          <div class="ic-text">CPA, TCPA, BCR, BCT. Se obtienen directo de la trayectoria del eco en pantalla — demora y distancia, barrido tras barrido. <span class="highlight">No necesitan ningún dato del buque propio</span> (ni HDG, ni STW, ni COG, ni SOG).</div>
+        </div>
+        <div class="intro-card" style="border-color:#ffff00">
+          <div class="ic-num">BLOQUE 2</div>
+          <div class="ic-title" style="color:#ffff00">MOVIMIENTO VERDADERO</div>
+          <div class="ic-text">Rumbo, velocidad y aspecto real del blanco. Se calculan resolviendo el <span class="highlight">triángulo de velocidades</span>: hay que sumar el vector propio (HDG+STW o COG+SOG) al vector relativo observado.</div>
+        </div>
+      </div>
+      <ul class="rule-list">
+        <li><span class="rule-num">⚠</span><span>Aunque el CPA/TCPA no necesite matemáticamente el rumbo propio, <span class="highlight">todo ARPA real exige el girocompás conectado igual</span>: sin estabilizar la imagen, el trazado del eco se vuelve inconsistente barrido a barrido.</span></li>
+        <li><span class="rule-num">▶</span><span>Confundir estos dos bloques es la fuente más común de errores de interpretación en pasarela.</span></li>
       </ul>
     </div>
 
@@ -199,6 +238,86 @@ html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monos
         <li><span class="rule-num cc-bct">(−)</span><span>BCT negativo: el blanco ya cruzó la proa. La situación de cruce está resuelta.</span></li>
         <li><span class="rule-num">⚠</span><span>Nunca actuar sobre BCT o BCR de forma aislada. Siempre en el contexto del <span class="highlight">CPA y TCPA</span> para evaluar la urgencia total de la situación.</span></li>
       </ul>
+    </div>
+
+    <!-- SLIDE B: Triángulo de velocidades (interactivo) -->
+    <div class="slide" id="sB">
+      <div class="slide-title" style="color:#ffff00">TRIÁNGULO DE VELOCIDADES</div>
+      <div class="slide-subtitle">Simulador — mové los controles y mirá cómo cambia el vector verdadero</div>
+      <div class="formula-box">
+        <div class="fterm" style="color:#ffff00">V verdadero = V propio + V relativo</div>
+        <div class="ffull">SUMA VECTORIAL — MOVIMIENTO VERDADERO DEL BLANCO</div>
+      </div>
+      <div class="interactive-wrap">
+        <div class="canvas-box"><canvas id="triCanvas" width="330" height="290"></canvas></div>
+        <div class="controls-box">
+          <div class="slider-row">
+            <div class="sr-label"><span>RUMBO PROPIO (HDG)</span><span class="sval" id="triHdgVal">060°</span></div>
+            <input type="range" min="0" max="359" value="60" id="triHdg">
+          </div>
+          <div class="slider-row">
+            <div class="sr-label"><span>VELOCIDAD PROPIA (STW)</span><span class="sval" id="triStwVal">10.0 kn</span></div>
+            <input type="range" min="0" max="20" step="0.5" value="10" id="triStw">
+          </div>
+          <div class="slider-row">
+            <div class="sr-label"><span>RUMBO RELATIVO (observado)</span><span class="sval" id="triRelBVal">200°</span></div>
+            <input type="range" min="0" max="359" value="200" id="triRelB">
+          </div>
+          <div class="slider-row">
+            <div class="sr-label"><span>VELOCIDAD RELATIVA</span><span class="sval" id="triRelSVal">8.0 kn</span></div>
+            <input type="range" min="0" max="25" step="0.5" value="8" id="triRelS">
+          </div>
+          <div class="legend-row">
+            <span><span class="legend-dot" style="background:#44aaff"></span>V propio</span>
+            <span><span class="legend-dot" style="background:#44ff88"></span>V relativo</span>
+            <span><span class="legend-dot" style="background:#ffff00"></span>V verdadero</span>
+          </div>
+          <div class="readout-grid">
+            <div class="readout-item"><div class="rk">RUMBO VERDADERO DEL BLANCO</div><div class="rv" id="triRumbo">—</div></div>
+            <div class="readout-item"><div class="rk">VELOCIDAD VERDADERA DEL BLANCO</div><div class="rv" id="triVel">—</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE C: Agua vs Fondo (interactivo) -->
+    <div class="slide" id="sC">
+      <div class="slide-title" style="color:#ffaa00">AGUA vs FONDO</div>
+      <div class="slide-subtitle">Cómo la corriente distorsiona el aspecto del blanco según la referencia elegida</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btnAgua" onclick="setAspMode('agua')">AGUA — HDG+STW</button>
+        <button class="mode-btn" id="btnFondo" onclick="setAspMode('fondo')">FONDO — COG+SOG</button>
+      </div>
+      <div class="interactive-wrap">
+        <div class="canvas-box"><canvas id="aspCanvas" width="330" height="290"></canvas></div>
+        <div class="controls-box">
+          <div class="slider-row">
+            <div class="sr-label"><span>PROA REAL DEL BLANCO (HDG)</span><span class="sval" id="aspHdgVal">045°</span></div>
+            <input type="range" min="0" max="359" value="45" id="aspHdg">
+          </div>
+          <div class="slider-row">
+            <div class="sr-label"><span>VELOCIDAD DEL BLANCO (STW)</span><span class="sval" id="aspStwVal">10.0 kn</span></div>
+            <input type="range" min="0" max="20" step="0.5" value="10" id="aspStw">
+          </div>
+          <div class="slider-row">
+            <div class="sr-label"><span>CORRIENTE — DIRECCIÓN</span><span class="sval" id="aspCurBVal">100°</span></div>
+            <input type="range" min="0" max="359" value="100" id="aspCurB">
+          </div>
+          <div class="slider-row">
+            <div class="sr-label"><span>CORRIENTE — VELOCIDAD</span><span class="sval" id="aspCurSVal">3.0 kn</span></div>
+            <input type="range" min="0" max="6" step="0.5" value="3" id="aspCurS">
+          </div>
+          <div class="legend-row">
+            <span><span class="legend-dot" style="background:#44ff88"></span>V agua (correcto)</span>
+            <span><span class="legend-dot" style="background:#ff8844"></span>V fondo (corriente)</span>
+          </div>
+          <div class="readout-grid">
+            <div class="readout-item"><div class="rk">MODO ACTIVO EN EL ARPA</div><div class="rv" id="aspModo" style="font-size:13px">AGUA</div></div>
+            <div class="readout-item"><div class="rk">DIFERENCIA DE ASPECTO</div><div class="rv" id="aspDelta">0.0°</div></div>
+          </div>
+          <div id="aspTagBox" style="margin-top:10px;line-height:1.6"></div>
+        </div>
+      </div>
     </div>
 
     <!-- SLIDE 6: Casos reales del radar Furuno -->
@@ -286,13 +405,13 @@ html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monos
 
   <div class="nav-bar">
     <button class="nav-btn" id="prev-btn" onclick="goSlide(-1)" disabled>◀ ANTERIOR</button>
-    <span class="slide-counter" id="slide-counter">1 / 9</span>
+    <span class="slide-counter" id="slide-counter">1 / 12</span>
     <button class="nav-btn" id="next-btn" onclick="goSlide(1)">SIGUIENTE ▶</button>
   </div>
 </div>
 
 <script>
-const TOTAL=9;
+const TOTAL=12;
 let cur=0;
 
 function buildProgress(){
@@ -326,6 +445,177 @@ document.addEventListener('keydown',e=>{
 });
 
 buildProgress();
+
+/* ===== Simuladores: triángulo de velocidades y agua/fondo ===== */
+function toXY(bearingDeg,len){
+  const r=bearingDeg*Math.PI/180;
+  return {x:len*Math.sin(r), y:-len*Math.cos(r)};
+}
+function toBearing(dx,dy){
+  let b=Math.atan2(dx,-dy)*180/Math.PI;
+  if(b<0)b+=360;
+  return b;
+}
+function pad3(n){
+  n=Math.round(n)%360;
+  if(n<0)n+=360;
+  return String(n).padStart(3,'0');
+}
+function drawArrowCanvas(ctx,p1,p2,color,lw,dashed){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=lw;
+  ctx.setLineDash(dashed?[7,5]:[]);
+  ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+  ctx.setLineDash([]);
+  const ang=Math.atan2(p2.y-p1.y,p2.x-p1.x);
+  const hl=9+lw;
+  ctx.beginPath();
+  ctx.moveTo(p2.x,p2.y);
+  ctx.lineTo(p2.x-hl*Math.cos(ang-Math.PI/6), p2.y-hl*Math.sin(ang-Math.PI/6));
+  ctx.lineTo(p2.x-hl*Math.cos(ang+Math.PI/6), p2.y-hl*Math.sin(ang+Math.PI/6));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function dot(ctx,p,color,r){
+  ctx.fillStyle=color; ctx.beginPath(); ctx.arc(p.x,p.y,r||3.5,0,Math.PI*2); ctx.fill();
+}
+
+function renderTriangle(){
+  const canvas=document.getElementById('triCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.fillStyle='#020a02'; ctx.fillRect(0,0,W,H);
+
+  const hdg=+document.getElementById('triHdg').value;
+  const stw=+document.getElementById('triStw').value;
+  const relB=+document.getElementById('triRelB').value;
+  const relS=+document.getElementById('triRelS').value;
+
+  document.getElementById('triHdgVal').textContent=pad3(hdg)+'°';
+  document.getElementById('triStwVal').textContent=stw.toFixed(1)+' kn';
+  document.getElementById('triRelBVal').textContent=pad3(relB)+'°';
+  document.getElementById('triRelSVal').textContent=relS.toFixed(1)+' kn';
+
+  const Vp=toXY(hdg,stw);
+  const Vr=toXY(relB,relS);
+  const O={x:0,y:0};
+  const A={x:Vp.x,y:Vp.y};
+  const B={x:Vp.x+Vr.x,y:Vp.y+Vr.y};
+
+  const xs=[O.x,A.x,B.x], ys=[O.y,A.y,B.y];
+  const minX=Math.min.apply(null,xs), maxX=Math.max.apply(null,xs);
+  const minY=Math.min.apply(null,ys), maxY=Math.max.apply(null,ys);
+  const bw=Math.max(maxX-minX,2), bh=Math.max(maxY-minY,2);
+  const pad=46;
+  let scale=Math.min((W-2*pad)/bw,(H-2*pad)/bh);
+  scale=Math.min(scale,16);
+  const ccx=W/2-((minX+maxX)/2)*scale;
+  const ccy=H/2-((minY+maxY)/2)*scale;
+  const toC=p=>({x:ccx+p.x*scale,y:ccy+p.y*scale});
+  const Oc=toC(O),Ac=toC(A),Bc=toC(B);
+
+  drawArrowCanvas(ctx,Oc,Ac,'#44aaff',3);
+  drawArrowCanvas(ctx,Ac,Bc,'#44ff88',3);
+  drawArrowCanvas(ctx,Oc,Bc,'#ffff00',3.2);
+  dot(ctx,Oc,'#00ff41',4);
+  ctx.font='10px Courier New'; ctx.fillStyle='#336633';
+  ctx.fillText('O',Oc.x-4,Oc.y+16);
+
+  const trueSpeed=Math.hypot(B.x,B.y);
+  const trueBearing=toBearing(B.x,B.y);
+  document.getElementById('triRumbo').textContent=pad3(trueBearing)+'°';
+  document.getElementById('triVel').textContent=trueSpeed.toFixed(1)+' kn';
+}
+
+let aspMode='agua';
+function setAspMode(m){
+  aspMode=m;
+  document.getElementById('btnAgua').classList.toggle('active', m==='agua');
+  document.getElementById('btnFondo').classList.toggle('active', m==='fondo');
+  renderAspect();
+}
+
+function renderAspect(){
+  const canvas=document.getElementById('aspCanvas');
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height;
+  ctx.fillStyle='#020a02'; ctx.fillRect(0,0,W,H);
+
+  const hdgB=+document.getElementById('aspHdg').value;
+  const stwB=+document.getElementById('aspStw').value;
+  const curB=+document.getElementById('aspCurB').value;
+  const curS=+document.getElementById('aspCurS').value;
+
+  document.getElementById('aspHdgVal').textContent=pad3(hdgB)+'°';
+  document.getElementById('aspStwVal').textContent=stwB.toFixed(1)+' kn';
+  document.getElementById('aspCurBVal').textContent=pad3(curB)+'°';
+  document.getElementById('aspCurSVal').textContent=curS.toFixed(1)+' kn';
+
+  const anchor={x:W/2-20,y:H/2+15};
+  const vscale=6.4;
+  const bearingRad=hdgB*Math.PI/180;
+
+  const shipLocal=[[13,0],[4,5.5],[-11,5.5],[-11,-5.5],[4,-5.5]];
+  const shipScale=3.6;
+  const shipPts=shipLocal.map(pt=>{
+    const ff=pt[0]*shipScale, rr=pt[1]*shipScale;
+    return {
+      x: anchor.x + ff*Math.sin(bearingRad)+rr*Math.cos(bearingRad),
+      y: anchor.y - ff*Math.cos(bearingRad)+rr*Math.sin(bearingRad)
+    };
+  });
+  ctx.fillStyle='#0f2a0f'; ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.4;
+  ctx.beginPath();
+  shipPts.forEach((p,i)=>{ i===0? ctx.moveTo(p.x,p.y): ctx.lineTo(p.x,p.y); });
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+
+  const Vwater=toXY(hdgB,stwB);
+  const Vcurrent=toXY(curB,curS);
+  const Vground={x:Vwater.x+Vcurrent.x, y:Vwater.y+Vcurrent.y};
+
+  const waterEnd={x:anchor.x+Vwater.x*vscale, y:anchor.y+Vwater.y*vscale};
+  const groundEnd={x:anchor.x+Vground.x*vscale, y:anchor.y+Vground.y*vscale};
+
+  drawArrowCanvas(ctx,anchor,waterEnd,'#44ff88', aspMode==='agua'?3.4:1.8, aspMode!=='agua');
+  drawArrowCanvas(ctx,anchor,groundEnd,'#ff8844', aspMode==='fondo'?3.4:1.8, aspMode!=='fondo');
+
+  const curAnchor={x:W-56,y:H-50};
+  ctx.strokeStyle='#1a4a1a'; ctx.beginPath(); ctx.arc(curAnchor.x,curAnchor.y,34,0,Math.PI*2); ctx.stroke();
+  const curScale=6.2;
+  const curEnd={x:curAnchor.x+Math.sin(curB*Math.PI/180)*curS*curScale, y:curAnchor.y-Math.cos(curB*Math.PI/180)*curS*curScale};
+  drawArrowCanvas(ctx,curAnchor,curEnd,'#5dade2',2.2,false);
+  ctx.font='9px Courier New'; ctx.fillStyle='#5dade2';
+  ctx.fillText('CORRIENTE',curAnchor.x-32,curAnchor.y+46);
+
+  const groundBearing=toBearing(Vground.x,Vground.y);
+  let delta=Math.abs(groundBearing-hdgB);
+  if(delta>180) delta=360-delta;
+
+  document.getElementById('aspModo').textContent = aspMode==='agua'?'AGUA (HDG+STW)':'FONDO (COG+SOG)';
+  document.getElementById('aspDelta').textContent = (aspMode==='agua' ? '0.0°' : delta.toFixed(1)+'°');
+
+  const tagBox=document.getElementById('aspTagBox');
+  if(aspMode==='agua'){
+    tagBox.innerHTML='<span class="tag tag-ok">ASPECTO CORRECTO</span><span style="font-size:11px;color:#aaffaa">El vector coincide con la proa real: válido para clasificar la situación según COLREG.</span>';
+  } else if(delta<3){
+    tagBox.innerHTML='<span class="tag tag-ok">CORRIENTE DESPRECIABLE</span><span style="font-size:11px;color:#aaffaa">Con esta corriente casi no hay distorsión visible.</span>';
+  } else if(delta<15){
+    tagBox.innerHTML='<span class="tag tag-warn">ATENCIÓN</span><span style="font-size:11px;color:#aaffaa">El vector se desvía '+delta.toFixed(1)+'° de la proa real. Puede alterar la lectura del tipo de cruce.</span>';
+  } else {
+    tagBox.innerHTML='<span class="tag tag-danger">ASPECTO ENGAÑOSO</span><span style="font-size:11px;color:#aaffaa">Desvío de '+delta.toFixed(1)+'° respecto a la proa real: alto riesgo de clasificar mal la situación de cruce.</span>';
+  }
+}
+
+['triHdg','triStw','triRelB','triRelS'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', renderTriangle);
+});
+['aspHdg','aspStw','aspCurB','aspCurS'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', renderAspect);
+});
+renderTriangle();
+renderAspect();
 </script>
 </body>
 </html>
