@@ -686,7 +686,9 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   const [rvex,rvey]=ts(tx+rvx*proj,ty+rvy*proj);
   const ang=Math.atan2(rvex-tx0s,-(rvey-ty0s));
 
-  // True COG/SOG vector target (dashed yellow, ground track with drift) — always visible
+  // Vector del blanco segun modo estabilizacion (calculado dentro de drawRadar)
+  const dispTVX = typeof STABMODE!=='undefined' && STABMODE==='water' ? thx : tvx;
+  const dispTVY = typeof STABMODE!=='undefined' && STABMODE==='water' ? thy : tvy;
   const [tvex,tvey]=ts(tx+dispTVX*proj,ty+dispTVY*proj);
   const vecColor=STABMODE==='water'?'rgba(100,255,180,0.6)':'rgba(255,255,0,0.6)';
   ctx.strokeStyle=vecColor; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
