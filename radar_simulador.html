@@ -6,67 +6,68 @@
 <title>Radar — CPA / TCPA / BCR / BCT — Escuela Nacional Fluvial</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff55;overflow:hidden}
+html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff41;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh;width:100vw}
-.top-bar{background:#050f05;border-bottom:1px solid #226622;padding:2px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.brand{color:#00ff55;font-size:16px;font-weight:bold;letter-spacing:3px}
-.top-info{display:flex;gap:16px;font-size:12px;color:#44aa44}
+.top-bar{background:#050f05;border-bottom:1px solid #1a4a1a;padding:3px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{color:#00ff41;font-size:14px;font-weight:bold;letter-spacing:3px}
+.top-info{display:flex;gap:16px;font-size:10px;color:#336633}
 .top-info span{color:#00cc33}
-.clock{color:#ffff00;font-size:15px;font-weight:bold}
+.clock{color:#ffff00;font-size:13px;font-weight:bold}
 .main{display:flex;flex:1;overflow:hidden}
-.left{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
-.sc-bar{background:#030d03;border-bottom:1px solid #1a441a;padding:1px 6px;display:flex;gap:3px;align-items:center;flex-shrink:0}
-.sc-bar label{font-size:11px;color:#44aa44;margin-right:4px}
-.sc{padding:2px 9px;font-size:10px;font-family:'Courier New',monospace;border:1px solid #1a3a1a;background:#000;color:#44aa44;cursor:pointer;letter-spacing:.5px;transition:all .15s;border-radius:2px}
-.sc:hover{border-color:#00ff55;color:#00ff55}
-.sc.on{background:#0a2a0a;border-color:#00ff55;color:#00ff55;font-weight:bold}
-.radar-wrap{flex:1;position:relative;background:#000;overflow:hidden;min-height:200px}
+.left{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.sc-bar{background:#030d03;border-bottom:1px solid #0f2a0f;padding:3px 8px;display:flex;gap:5px;align-items:center;flex-shrink:0}
+.sc-bar label{font-size:9px;color:#336633;margin-right:4px}
+.sc{padding:2px 9px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #1a3a1a;background:#000;color:#336633;cursor:pointer;letter-spacing:.5px;transition:all .15s;border-radius:2px}
+.sc:hover{border-color:#00ff41;color:#00ff41}
+.sc.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+.radar-wrap{flex:1;position:relative;background:#000;overflow:hidden}
 canvas{display:block}
-.controls{background:#030d03;border-top:1px solid #1a441a;padding:2px 8px;display:grid;grid-template-columns:repeat(6,1fr) auto;gap:3px 8px;align-items:center;flex-shrink:0}.controls2{background:#030d03;border-top:1px solid #1a441a;padding:2px 8px;display:grid;grid-template-columns:1fr 1fr auto;gap:3px 8px;align-items:center;flex-shrink:0}
+.controls{background:#030d03;border-top:1px solid #0f2a0f;padding:4px 8px;display:grid;grid-template-columns:repeat(6,1fr) auto;gap:6px 8px;align-items:center;flex-shrink:0}
 .sl{display:flex;flex-direction:column;gap:1px}
-.sl-lbl{display:flex;justify-content:space-between;font-size:9px;color:#44aa44}
+.sl-lbl{display:flex;justify-content:space-between;font-size:9px;color:#336633}
 .sl-lbl span{color:#ffff00;font-weight:bold}
-.sl input[type=range]{width:100%;height:12px;accent-color:#00ff55;cursor:pointer}
+.sl input[type=range]{width:100%;height:12px;accent-color:#00ff41;cursor:pointer}
+.sl input[type=range]:disabled{accent-color:#336633;cursor:not-allowed;opacity:.5}
 .mode-col{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
-.mode-btn{padding:4px 10px;font-size:11px;font-family:'Courier New',monospace;border:1px solid #44aa44;background:#000;color:#44aa44;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
+.mode-btn{padding:4px 10px;font-size:9px;font-family:'Courier New',monospace;border:1px solid #336633;background:#000;color:#336633;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
 .mode-btn:hover{border-color:#ffff00;color:#ffff00}
 .mode-btn.on{background:#1a1a00;border-color:#ffff00;color:#ffff00;font-weight:bold}
-.sidebar{width:200px;background:#050f05;border-left:1px solid #226622;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-.tgt-block{border-bottom:1px solid #1a441a;padding:5px 8px;flex-shrink:0}
-.tgt-label{color:#00ccff;font-size:12px;font-weight:bold;letter-spacing:1px;margin-bottom:2px}
-.tgt-name{color:#ffff00;font-size:14px;font-weight:bold;margin-bottom:5px}
-.tgt-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:3px}
-.tgt-row .lbl{color:#44aa44}
-.tgt-row .val{color:#00ff55;font-weight:bold;font-size:15px}
+.sidebar{width:200px;background:#050f05;border-left:1px solid #1a4a1a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.tgt-block{border-bottom:1px solid #0f2a0f;padding:5px 8px;flex-shrink:0}
+.tgt-label{color:#00ccff;font-size:10px;font-weight:bold;letter-spacing:1px;margin-bottom:2px}
+.tgt-name{color:#ffff00;font-size:12px;font-weight:bold;margin-bottom:5px}
+.tgt-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px}
+.tgt-row .lbl{color:#336633}
+.tgt-row .val{color:#00ff41;font-weight:bold;font-size:13px}
 .tgt-row .val.danger{color:#ff3333}
 .tgt-row .val.warn{color:#ffaa00}
 .tgt-row .val.ok{color:#44ff88}
 .metrics{padding:5px 8px;flex-shrink:0}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.mc{background:#030d03;border:1px solid #1a441a;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
-.mc:hover{border-color:#44aa44}
-.mc.sel{border-color:#00ff55}
-.mc .mk{font-size:11px;color:#44aa44;letter-spacing:.5px}
-.mc .mv{font-size:24px;font-weight:bold;line-height:1;margin:1px 0}
-.mc .mu{font-size:11px;color:#44aa44}
-.mc .mdef{font-size:10px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #1a441a;display:none}
+.mc{background:#030d03;border:1px solid #0f2a0f;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
+.mc:hover{border-color:#336633}
+.mc.sel{border-color:#00ff41}
+.mc .mk{font-size:9px;color:#336633;letter-spacing:.5px}
+.mc .mv{font-size:22px;font-weight:bold;line-height:1;margin:1px 0}
+.mc .mu{font-size:9px;color:#336633}
+.mc .mdef{font-size:8px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #0f2a0f;display:none}
 .mc.sel .mdef{display:block}
 .cpa-c{color:#ff3333}.tcpa-c{color:#44aaff}.bcr-c{color:#44ff88}.bct-c{color:#ffaa00}
-.alert-section{flex-shrink:0;padding:5px 8px;border-top:1px solid #1a441a}
-.alert-lbl{font-size:10px;color:#44aa44;margin-bottom:3px;letter-spacing:.5px}
-.alert-box{border-radius:2px;padding:4px 7px;font-size:11px;font-weight:bold;letter-spacing:.3px;line-height:1.4;min-height:28px;transition:all .3s;cursor:pointer;position:relative}
-.alert-box .reveal-hint{font-size:10px;font-weight:normal;opacity:.7;margin-top:2px}
-.ab-hidden{background:#0a0a0a;border:1px dashed #44aa44;color:#44aa44}
+.alert-section{flex-shrink:0;padding:5px 8px;border-top:1px solid #0f2a0f}
+.alert-lbl{font-size:8px;color:#336633;margin-bottom:3px;letter-spacing:.5px}
+.alert-box{border-radius:2px;padding:4px 7px;font-size:9px;font-weight:bold;letter-spacing:.3px;line-height:1.4;min-height:28px;transition:all .3s;cursor:pointer;position:relative}
+.alert-box .reveal-hint{font-size:8px;font-weight:normal;opacity:.7;margin-top:2px}
+.ab-hidden{background:#0a0a0a;border:1px dashed #336633;color:#336633}
 .ab-danger{background:#2a0000;border:1px solid #ff3333;color:#ff3333}
 .ab-warn{background:#1a1000;border:1px solid #ffaa00;color:#ffaa00}
 .ab-ok{background:#001a06;border:1px solid #44ff88;color:#44ff88}
-.cfg{padding:5px 8px;font-size:10px;color:#226622;border-top:1px solid #1a441a;flex-shrink:0}
-.cfg span{color:#00ff55;display:block;margin-bottom:1px}
+.cfg{padding:5px 8px;font-size:8px;color:#1a4a1a;border-top:1px solid #0f2a0f;flex-shrink:0}
+.cfg span{color:#00ff41;display:block;margin-bottom:1px}
 .rng-selector{display:flex;flex-direction:column;gap:1px}
 .rng-btns{display:flex;gap:3px;flex-wrap:wrap}
-.rng-btn{padding:1px 6px;font-size:10px;font-family:'Courier New',monospace;border:1px solid #1a441a;background:#000;color:#44aa44;cursor:pointer;border-radius:1px}
-.rng-btn:hover{border-color:#00ff55;color:#00ff55}
-.rng-btn.on{background:#0a2a0a;border-color:#00ff55;color:#00ff55;font-weight:bold}
+.rng-btn{padding:1px 6px;font-size:8px;font-family:'Courier New',monospace;border:1px solid #0f2a0f;background:#000;color:#336633;cursor:pointer;border-radius:1px}
+.rng-btn:hover{border-color:#00ff41;color:#00ff41}
+.rng-btn.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
 </style>
 </head>
 <body>
@@ -75,7 +76,7 @@ canvas{display:block}
     <div style="display:flex;align-items:center;gap:8px">
       <img src="ESNF_FONDO.jpg" alt="ENF" style="height:36px;width:auto;border-radius:2px;opacity:.9">
       <div>
-        <div style="font-size:11px;font-weight:bold;color:#c8a020;letter-spacing:1px;line-height:1.2">ESCUELA NACIONAL FLUVIAL</div>
+        <div style="font-size:9px;font-weight:bold;color:#c8a020;letter-spacing:1px;line-height:1.2">ESCUELA NACIONAL FLUVIAL</div>
         <span class="brand">FURUNO</span>
       </div>
     </div>
@@ -91,6 +92,13 @@ canvas{display:block}
 
   <div class="main">
     <div class="left">
+      <div class="sc-bar" style="background:#0a1505">
+        <label>FUENTE DE DATOS OS:</label>
+        <button class="sc on" id="src-manual" onclick="setSource('manual')">MANUAL</button>
+        <button class="sc" id="src-live" onclick="setSource('live')">VIVO (Virtual Sailor)</button>
+        <span id="live-status" style="margin-left:14px;font-size:9px;color:#664400">○ Desconectado</span>
+        <span id="live-data" style="margin-left:10px;font-size:9px;color:#336633"></span>
+      </div>
       <div class="sc-bar">
         <label>ESCENARIO:</label>
         <button class="sc on" onclick="sc('maersk')">MAERSK LABERINTO</button>
@@ -99,16 +107,16 @@ canvas{display:block}
         <button class="sc" onclick="sc('alcance')">Alcance</button>
         <button class="sc" onclick="sc('seguro')">Paso seguro</button>
       </div>
-      <div class="sc-bar" style="border-top:1px solid #1a441a">
+      <div class="sc-bar" style="border-top:1px solid #0f2a0f">
         <label>ORIENTACION:</label>
         <button class="sc ori-btn on" id="ori-north" onclick="setOri('north')">NORTH UP</button>
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
         <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
         <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
         <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
-        <button class="sc on" id="stab-toggle" onclick="toggleStab()" style="margin-left:6px;background:#0a1a0a;border-color:#00cc44">REF: AGUA</button>
+        <button class="sc on" id="stab-toggle" onclick="toggleStab()" style="margin-left:6px;border-color:#00cc44">REF: AGUA</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
-          <label style="font-size:11px;color:#44aa44">RANGO:</label>
+          <label style="font-size:9px;color:#336633">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
             <button class="rng-btn" onclick="setRng(0.5)">0.5</button>
             <button class="rng-btn" onclick="setRng(1)">1</button>
@@ -120,20 +128,8 @@ canvas{display:block}
             <button class="rng-btn" onclick="setRng(16)">16</button>
             <button class="rng-btn" onclick="setRng(24)">24</button>
           </div>
-          <span style="font-size:10px;color:#44aa44">NM</span>
+          <span style="font-size:8px;color:#336633">NM</span>
         </div>
-      </div>
-      <div class="sc-bar" style="border-top:1px solid #1a441a">
-        <label style="font-size:11px;color:#44aa44">VECTOR (min):</label>
-        <div class="rng-btns" id="vec-btns">
-          <button class="rng-btn" onclick="setVec(3)">3</button>
-          <button class="rng-btn on" id="vbtn6" onclick="setVec(6)">6</button>
-          <button class="rng-btn" onclick="setVec(10)">10</button>
-          <button class="rng-btn" onclick="setVec(15)">15</button>
-          <button class="rng-btn" onclick="setVec(20)">20</button>
-          <button class="rng-btn" onclick="setVec(30)">30</button>
-        </div>
-        <span style="font-size:10px;color:#44aa44">min — proyección del vector COG/SOG y ARPA</span>
       </div>
 
 
@@ -141,7 +137,7 @@ canvas{display:block}
         <canvas id="rc"></canvas>
       </div>
 
-      <div class="controls" style="flex-shrink:0">
+      <div class="controls">
         <div class="sl">
           <div class="sl-lbl">Rumbo blanco (HDG) <span id="vhdg">060°</span></div>
           <input type="range" id="hdg" min="0" max="359" step="1" value="60" oninput="upd()">
@@ -171,7 +167,7 @@ canvas{display:block}
           <button class="mode-btn" id="btn-ejercicio" onclick="setMode('ejercicio')">EJERCICIO</button>
         </div>
       </div>
-      <div class="controls2" style="grid-template-columns:1fr 1fr auto;border-top:1px solid #1a441a">
+      <div class="controls" style="grid-template-columns:1fr 1fr auto;border-top:1px solid #0f2a0f">
         <div class="sl">
           <div class="sl-lbl">Dirección corriente <span id="vcurdir">000°</span></div>
           <input type="range" id="curdir" min="0" max="359" step="1" value="0" oninput="upd()">
@@ -180,32 +176,32 @@ canvas{display:block}
           <div class="sl-lbl">Veloc. corriente <span id="vcurspd">0.0 kn</span></div>
           <input type="range" id="curspd" min="0" max="3" step="0.1" value="0" oninput="upd()">
         </div>
-        <div style="font-size:10px;color:#44aa44;line-height:1.4;max-width:170px">
+        <div style="font-size:8px;color:#336633;line-height:1.4;max-width:170px">
           Heading line (━) = rumbo de aguja.<br>Vector COG/SOG (┄) = rumbo real sobre el fondo, con deriva.
         </div>
       </div>
     </div>
 
     <div class="sidebar">
-      <div class="tgt-block">
+            <div class="tgt-block" style="border-bottom:1px solid #0f2a0f;padding-bottom:6px;margin-bottom:4px">
         <div class="tgt-label" style="color:#44ff88">OS — BUQUE PROPIO</div>
         <div class="tgt-name" id="os-name">OS</div>
         <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="os-hdg-disp">000°</span></div>
-        <div class="tgt-row"><span class="lbl">STW (agua)</span><span class="val" id="os-stw-disp">10 kn</span></div>
+        <div class="tgt-row"><span class="lbl">STW (agua)</span><span class="val" id="os-stw-disp">10.0 kn</span></div>
         <div class="tgt-row"><span class="lbl">COG (fondo)</span><span class="val" id="os-cog-disp" style="color:#aaffaa">000°</span></div>
-        <div class="tgt-row"><span class="lbl">SOG (fondo)</span><span class="val" id="os-sog-disp" style="color:#aaffaa">10 kn</span></div>
-        <div class="tgt-row"><span class="lbl">CORRIENTE</span><span class="val" id="os-cur-disp">000° / 0.0kn</span></div>
+        <div class="tgt-row"><span class="lbl">SOG (fondo)</span><span class="val" id="os-sog-disp" style="color:#aaffaa">10.0 kn</span></div>
+        <div class="tgt-row"><span class="lbl">CORRIENTE</span><span class="val" id="os-cur-disp" style="font-size:11px">000° / 0.0kn</span></div>
       </div>
 
-      <div class="tgt-block">
+<div class="tgt-block">
         <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
         <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
         <div class="tgt-row"><span class="lbl">BRG</span><span class="val" id="si-brg">060°R</span></div>
         <div class="tgt-row"><span class="lbl">RNG</span><span class="val" id="si-rng">3.000 NM</span></div>
         <div class="tgt-row"><span class="lbl">STW</span><span class="val" id="si-stw">11 kn</span></div>
         <div class="tgt-row"><span class="lbl">HDG (aguja)</span><span class="val" id="si-hdg">060°</span></div>
-        <div class="tgt-row"><span class="lbl" id="lbl-cog">COG</span><span class="val" id="si-cog" style="color:#aaffaa">060°</span></div>
-        <div class="tgt-row"><span class="lbl" id="lbl-sog">SOG</span><span class="val" id="si-sog" style="color:#aaffaa">11 kn</span></div>
+        <div class="tgt-row"><span class="lbl" id="lbl-cog">COG (fondo)</span><span class="val" id="si-cog" style="color:#aaffaa">060°</span></div>
+        <div class="tgt-row"><span class="lbl" id="lbl-sog">SOG (fondo)</span><span class="val" id="si-sog" style="color:#aaffaa">11 kn</span></div>
         <div class="tgt-row"><span class="lbl">CPA</span><span class="val danger" id="si-cpa">—</span></div>
         <div class="tgt-row"><span class="lbl">TCPA</span><span class="val" id="si-tcpa">—</span></div>
         <div class="tgt-row"><span class="lbl">BCR</span><span class="val" id="si-bcr">—</span></div>
@@ -213,7 +209,7 @@ canvas{display:block}
       </div>
 
       <div class="metrics">
-        <div style="font-size:10px;color:#44aa44;margin-bottom:3px;letter-spacing:.5px">TOQUE PARA DEFINICION</div>
+        <div style="font-size:8px;color:#336633;margin-bottom:3px;letter-spacing:.5px">TOQUE PARA DEFINICION</div>
         <div class="m-grid">
           <div class="mc sel" id="mc-cpa" onclick="selM('cpa')">
             <div class="mk">CPA</div>
@@ -256,6 +252,17 @@ canvas{display:block}
         <span>VEC: TRUE-S <span id="vec-min-lbl">6</span>min</span>
         <span>CPA ALM: 0.5 NM / 10 min</span>
         <span>OS HDG: 000° — GYRO1</span>
+        <div style="margin-top:4px;font-size:8px;color:#336633">
+          <div style="margin-bottom:2px">VECTOR:</div>
+          <div style="display:flex;gap:3px">
+            <button class="rng-btn" onclick="setVec(3)">3m</button>
+            <button class="rng-btn" onclick="setVec(6)" id="vbtn6" style="border-color:#00ff41;color:#00ff41">6m</button>
+            <button class="rng-btn" onclick="setVec(10)">10m</button>
+            <button class="rng-btn" onclick="setVec(15)">15m</button>
+            <button class="rng-btn" onclick="setVec(20)">20m</button>
+            <button class="rng-btn" onclick="setVec(30)">30m</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -264,7 +271,10 @@ canvas{display:block}
 <script>
 const cv=document.getElementById('rc');
 const ctx=cv.getContext('2d');
-let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true, SHOWHEADLINE=true, STABMODE='water'; // 'water'=HDG+STW | 'ground'=COG+SOG
+let RNG=4, VECMIN=6, MODE='normal', revealed=false, ORI='north', SHOWARPA=true, SHOWHEADLINE=true, STABMODE='water';
+let SOURCE='manual'; // 'manual' or 'live'
+let liveData={lat:null,lon:null,sog:null,cog:null,hdg:null,stw:null,conectado_vs:false,ultima_actualizacion:0};
+let ws=null;
 let alertClass='ab-hidden', alertMsg='—';
 
 function d2r(d){return d*Math.PI/180}
@@ -292,13 +302,6 @@ function sc(name){
   upd();
 }
 
-function toggleArpa(){
-  SHOWARPA=!SHOWARPA;
-  const btn=document.getElementById('arpa-toggle');
-  btn.textContent='VECTOR ARPA: '+(SHOWARPA?'ON':'OFF');
-  btn.classList.toggle('on',SHOWARPA);
-  upd();
-}
 
 function toggleHeadline(){
   SHOWHEADLINE=!SHOWHEADLINE;
@@ -314,9 +317,91 @@ function toggleStab(){
   const isWater = STABMODE==='water';
   btn.textContent = 'REF: '+(isWater?'AGUA':'FONDO');
   btn.style.borderColor = isWater ? '#00cc44' : '#ffaa00';
-  btn.style.color = isWater ? '#00ff55' : '#ffaa00';
+  btn.style.color = isWater ? '#00ff41' : '#ffaa00';
   btn.style.background = isWater ? '#0a1a0a' : '#1a1000';
   upd();
+}
+function toggleArpa(){
+function toggleHeadline(){
+  SHOWHEADLINE=!SHOWHEADLINE;
+  const btn=document.getElementById('headline-toggle');
+  btn.textContent='LINEA DE FE: '+(SHOWHEADLINE?'ON':'OFF');
+  btn.classList.toggle('on',SHOWHEADLINE);
+  upd();
+}
+
+function toggleStab(){
+  STABMODE = STABMODE==='water' ? 'ground' : 'water';
+  const btn=document.getElementById('stab-toggle');
+  const isWater = STABMODE==='water';
+  btn.textContent = 'REF: '+(isWater?'AGUA':'FONDO');
+  btn.style.borderColor = isWater ? '#00cc44' : '#ffaa00';
+  btn.style.color = isWater ? '#00ff41' : '#ffaa00';
+  btn.style.background = isWater ? '#0a1a0a' : '#1a1000';
+  upd();
+}
+
+  SHOWARPA=!SHOWARPA;
+  const btn=document.getElementById('arpa-toggle');
+  btn.textContent='VECTOR ARPA: '+(SHOWARPA?'ON':'OFF');
+  btn.classList.toggle('on',SHOWARPA);
+  upd();
+}
+
+function setSource(src){
+  SOURCE=src;
+  document.getElementById('src-manual').classList.toggle('on',src==='manual');
+  document.getElementById('src-live').classList.toggle('on',src==='live');
+  // enable/disable manual OS sliders
+  const lock=(src==='live');
+  ['oshdg','ospd','curdir','curspd'].forEach(id=>{
+    document.getElementById(id).disabled=lock;
+  });
+  if(src==='live' && !ws){
+    connectWS();
+  }
+  upd();
+}
+
+function connectWS(){
+  try{
+    ws=new WebSocket('ws://localhost:8765');
+    ws.onopen=()=>{
+      document.getElementById('live-status').textContent='● Conectando al puente...';
+      document.getElementById('live-status').style.color='#ffaa00';
+    };
+    ws.onmessage=(ev)=>{
+      try{
+        liveData=JSON.parse(ev.data);
+        const ok=liveData.conectado_vs;
+        const st=document.getElementById('live-status');
+        if(ok){
+          st.textContent='● VIVO — recibiendo datos de Virtual Sailor';
+          st.style.color='#44ff88';
+        } else {
+          st.textContent='○ Puente activo, esperando datos de Virtual Sailor...';
+          st.style.color='#ffaa00';
+        }
+        const dd=document.getElementById('live-data');
+        if(liveData.lat!==null&&liveData.lon!==null){
+          dd.textContent='LAT '+liveData.lat.toFixed(4)+' / LON '+liveData.lon.toFixed(4);
+        }
+        if(SOURCE==='live') upd();
+      }catch(e){}
+    };
+    ws.onclose=()=>{
+      document.getElementById('live-status').textContent='○ Desconectado del puente';
+      document.getElementById('live-status').style.color='#664400';
+      ws=null;
+      if(SOURCE==='live') setTimeout(connectWS,3000);
+    };
+    ws.onerror=()=>{
+      document.getElementById('live-status').textContent='✕ Sin conexión — ¿está corriendo puente_nmea.py?';
+      document.getElementById('live-status').style.color='#ff4444';
+    };
+  }catch(e){
+    document.getElementById('live-status').textContent='✕ Error: '+e.message;
+  }
 }
 
 function setOri(mode){
@@ -336,7 +421,7 @@ function setRng(r){
 
 function setVec(m){
   VECMIN=m;
-  document.querySelectorAll('#vec-btns .rng-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#app .cfg .rng-btn').forEach(b=>b.classList.remove('on'));
   event.target.classList.add('on');
   document.getElementById('vec-min-lbl').textContent=m;
   document.getElementById('vec-label').textContent='VECTOR '+m+'min';
@@ -378,15 +463,49 @@ function fmt(m){
 }
 
 function upd(){
-  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst'),ospd=gv('ospd'),oshdg=gv('oshdg');
-  const curdir=gv('curdir'),curspd=gv('curspd');
-  document.getElementById('voshdg').textContent=String(oshdg).padStart(3,'0')+'°';
+  const hdg=gv('hdg'),spd=gv('spd'),brg=gv('brg'),dst=gv('dst');
+  let ospd,oshdg,curdir,curspd;
+
+  if(SOURCE==='live' && liveData.conectado_vs && liveData.hdg!==null){
+    oshdg = liveData.hdg;
+    ospd = (liveData.stw!==null) ? liveData.stw : (liveData.sog||0);
+    // Derive an equivalent current vector from the difference between
+    // water-track (HDG/STW) and ground-track (COG/SOG) reported by VS.
+    if(liveData.cog!==null && liveData.sog!==null){
+      const ohx0=ospd*Math.sin(d2r(oshdg)), ohy0=ospd*Math.cos(d2r(oshdg));
+      const ogx0=liveData.sog*Math.sin(d2r(liveData.cog)), ogy0=liveData.sog*Math.cos(d2r(liveData.cog));
+      const cdx=ogx0-ohx0, cdy=ogy0-ohy0;
+      curdir=(r2d(Math.atan2(cdx,cdy))+360)%360;
+      curspd=Math.sqrt(cdx*cdx+cdy*cdy);
+    } else {
+      curdir=0; curspd=0;
+    }
+    sv('oshdg',Math.round(oshdg)); sv('ospd',Math.round(ospd));
+    sv('curdir',Math.round(curdir)); sv('curspd',curspd.toFixed(1));
+  } else {
+    ospd=gv('ospd'); oshdg=gv('oshdg');
+    curdir=gv('curdir'); curspd=gv('curspd');
+  }
+
+  document.getElementById('voshdg').textContent=String(Math.round(oshdg)).padStart(3,'0')+'°';
+
+  // OS data panel updates
+  const osCog=(r2d(Math.atan2(ovx,ovy))+360)%360;
+  const osSog=Math.sqrt(ovx*ovx+ovy*ovy);
+  if(document.getElementById('os-hdg-disp')) {
+    document.getElementById('os-hdg-disp').textContent=String(Math.round(oshdg)).padStart(3,'0')+'°';
+    document.getElementById('os-stw-disp').textContent=ospd.toFixed(1)+' kn';
+    document.getElementById('os-cog-disp').textContent=osCog.toFixed(1)+'°';
+    document.getElementById('os-sog-disp').textContent=osSog.toFixed(1)+' kn';
+    document.getElementById('os-cur-disp').textContent=String(curdir).padStart(3,'0')+'° / '+curspd.toFixed(1)+'kn';
+  }
+
   document.getElementById('vhdg').textContent=String(hdg).padStart(3,'0')+'°';
   document.getElementById('vspd').textContent=spd+' kn';
   document.getElementById('vbrg').textContent=String(brg).padStart(3,'0')+'°';
   document.getElementById('vdst').textContent=dst.toFixed(1)+' NM';
-  document.getElementById('vospd').textContent=ospd+' kn';
-  document.getElementById('vcurdir').textContent=String(curdir).padStart(3,'0')+'°';
+  document.getElementById('vospd').textContent=ospd.toFixed(1)+' kn';
+  document.getElementById('vcurdir').textContent=String(Math.round(curdir)).padStart(3,'0')+'°';
   document.getElementById('vcurspd').textContent=curspd.toFixed(1)+' kn';
   document.getElementById('si-brg').textContent=String(brg).padStart(3,'0')+'°R';
   document.getElementById('si-rng').textContent=dst.toFixed(3)+' NM';
@@ -399,70 +518,44 @@ function upd(){
   const thx=spd*Math.sin(d2r(hdg)), thy=spd*Math.cos(d2r(hdg));
   // Current vector (affects both ships equally — same water mass)
   const cvx=curspd*Math.sin(d2r(curdir)), cvy=curspd*Math.cos(d2r(curdir));
-  // True COG/SOG vectors (ground-track, with drift) — always used for CPA/TCPA/BCR/BCT
+  // True COG/SOG vectors (ground-track, with drift) — used for CPA/TCPA/BCR/BCT and dashed vector
   const ovx=ohx+cvx, ovy=ohy+cvy;
   const tvx=thx+cvx, tvy=thy+cvy;
   const rvx=tvx-ovx, rvy=tvy-ovy;
   const dot=tx*rvx+ty*rvy, rs2=rvx*rvx+rvy*rvy;
 
-  // Vector del blanco que se dibuja y muestra en el panel segun el modo de estabilizacion
-  // AGUA (water-stabilized): HDG+STW del blanco — muestra aspecto real (COLREG)
-  // FONDO (ground-stabilized): COG+SOG del blanco — muestra derrota sobre el fondo
+
+  // Vector del blanco segun modo estabilizacion
   const dispTVX = STABMODE==='water' ? thx : tvx;
   const dispTVY = STABMODE==='water' ? thy : tvy;
   const tCog=(r2d(Math.atan2(dispTVX,dispTVY))+360)%360;
   const tSog=Math.sqrt(dispTVX*dispTVX+dispTVY*dispTVY);
 
-  // OS data panel (mirrors the target panel)
-  const osCog=(r2d(Math.atan2(ovx,ovy))+360)%360;
-  const osSog=Math.sqrt(ovx*ovx+ovy*ovy);
-  document.getElementById('os-hdg-disp').textContent=String(oshdg).padStart(3,'0')+'°';
-  document.getElementById('os-stw-disp').textContent=ospd.toFixed(1)+' kn';
-  document.getElementById('os-cog-disp').textContent=osCog.toFixed(1)+'°';
-  document.getElementById('os-sog-disp').textContent=osSog.toFixed(1)+' kn';
-  document.getElementById('os-cur-disp').textContent=String(curdir).padStart(3,'0')+'° / '+curspd.toFixed(1)+'kn';
-
   document.getElementById('si-cog').textContent=tCog.toFixed(1)+'°';
-  document.getElementById('si-sog').textContent=tSog.toFixed(1)+' kn';
-  // Actualizar labels segun el modo de estabilizacion
+
+  // Update target vector labels based on stabilization mode
   const cogLbl = document.getElementById('lbl-cog');
   const sogLbl = document.getElementById('lbl-sog');
-  const cogVal = document.getElementById('si-cog');
-  const sogVal = document.getElementById('si-sog');
-  if(STABMODE==='water'){
-    cogLbl.textContent='STW (agua)'; sogLbl.textContent='SOG (agua)';
-    cogVal.style.color='#64ffb4'; sogVal.style.color='#64ffb4';
-  } else {
-    cogLbl.textContent='COG (fondo)'; sogLbl.textContent='SOG (fondo)';
-    cogVal.style.color='#ffff44'; sogVal.style.color='#ffff44';
+  if(cogLbl) {
+    if(STABMODE==='water'){
+      cogLbl.textContent='STW (agua)'; sogLbl.textContent='SOG (agua)';
+      document.getElementById('si-cog').style.color='#64ffb4';
+      document.getElementById('si-sog').style.color='#64ffb4';
+    } else {
+      cogLbl.textContent='COG (fondo)'; sogLbl.textContent='SOG (fondo)';
+      document.getElementById('si-cog').style.color='#ffff44';
+      document.getElementById('si-sog').style.color='#ffff44';
+    }
   }
+
+  document.getElementById('si-sog').textContent=tSog.toFixed(1)+' kn';
 
   let tcpa=NaN,cpa=NaN;
   if(rs2<0.0001){tcpa=0;cpa=dst;}
   else{tcpa=(-dot/rs2)*60; const ch=tcpa/60; cpa=Math.sqrt((tx+rvx*ch)**2+(ty+rvy*ch)**2);}
 
-  // BCR/BCT: punto donde la trayectoria relativa del blanco cruza la linea
-  // de la proa (o popa) del buque propio -- no el meridiano norte.
-  // Se rota el sistema de coordenadas al marco de referencia del OS
-  // (proa = eje y', estribor = eje x') antes de buscar el cruce con x'=0.
   let bcr=null,bct=null;
-  {
-    const osrad=d2r(oshdg);
-    const cosO=Math.cos(osrad), sinO=Math.sin(osrad);
-    // posicion del blanco en el marco del OS (x'=estribor, y'=proa)
-    const txp = tx*cosO - ty*sinO;
-    const typ = tx*sinO + ty*cosO;
-    // vector relativo del blanco en el marco del OS
-    const rvxp = rvx*cosO - rvy*sinO;
-    const rvyp = rvx*sinO + rvy*cosO;
-    if(Math.abs(rvxp)>0.001){
-      const tb=-txp/rvxp;
-      if(tb>=0){
-        bct=tb*60;
-        bcr=typ+rvyp*tb; // (+) cruza por proa, (-) cruza por popa
-      }
-    }
-  }
+  if(Math.abs(rvx)>0.001){const tb=-tx/rvx; if(tb>=0){bct=tb*60;bcr=ty+rvy*tb;}}
 
   const cpaS=isNaN(cpa)?'—':cpa.toFixed(3)+' NM';
   const tcpaS=isNaN(tcpa)?'—':fmt(tcpa);
@@ -508,10 +601,10 @@ function upd(){
     document.getElementById('reveal-hint').textContent='';
   }
 
-  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy,osCog);
+  drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy);
 }
 
-function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy,osCog){
+function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,ohy,thx,thy){
   const wrap=document.getElementById('radar-wrap');
   const W=wrap.clientWidth, H=wrap.clientHeight;
   cv.width=W; cv.height=H;
@@ -521,12 +614,9 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
   // Orientation: rotate the whole picture so that North-Up, Course-Up or Head-Up is on top.
-  // screenRot = la marcacion verdadera que debe apuntar "arriba" en pantalla.
-  // HEAD UP usa el HDG (rumbo de aguja, proa real del buque).
-  // COURSE UP usa el COG (rumbo sobre el fondo, course over ground, con deriva).
+  // screenRot = the true bearing that should point "up" on screen.
   let screenRot = 0;
-  if(ORI==='head') screenRot = oshdg;
-  else if(ORI==='course') screenRot = osCog;
+  if(ORI==='course' || ORI==='head') screenRot = oshdg;
   ctx.save();
   ctx.translate(CX,CY);
   ctx.rotate(d2r(-screenRot));
@@ -578,15 +668,9 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     }
   }
 
-  // BCR circle — tied to the ARPA vector. El punto va sobre la linea real
-  // de la proa (o popa) del OS, no sobre el meridiano norte.
+  // BCR circle — tied to the ARPA vector
   if(SHOWARPA&&bcr!==null&&bct!==null&&bct<9999&&bct>0&&(MODE==='normal'||revealed)){
-    const osrad2=d2r(oshdg);
-    // bcr es la distancia a lo largo de la proa (eje y' del OS); convertir
-    // de vuelta a coordenadas globales (x=Este, y=Norte) antes de proyectar.
-    const bcrGlobalX = bcr*Math.sin(osrad2);
-    const bcrGlobalY = bcr*Math.cos(osrad2);
-    const [bcx,bcy]=ts(bcrGlobalX,bcrGlobalY);
+    const [bcx,bcy]=ts(0,bcr);
     ctx.strokeStyle='#44ff88'; ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.arc(bcx,bcy,6,0,Math.PI*2); ctx.stroke();
     txt(bcx+8,bcy+4,'BCR','bold 9px Courier New','#44ff88');
@@ -602,11 +686,10 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   const [rvex,rvey]=ts(tx+rvx*proj,ty+rvy*proj);
   const ang=Math.atan2(rvex-tx0s,-(rvey-ty0s));
 
-  // Vector del blanco: modo AGUA = HDG+STW (verde azulado), modo FONDO = COG+SOG (amarillo)
-  // El color diferente ayuda al cadete a ver de un vistazo en que referencia esta
+  // True COG/SOG vector target (dashed yellow, ground track with drift) — always visible
   const [tvex,tvey]=ts(tx+dispTVX*proj,ty+dispTVY*proj);
-  const vecColor = STABMODE==='water' ? 'rgba(100,255,180,0.7)' : 'rgba(255,255,0,0.7)';
-  ctx.strokeStyle=vecColor; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  const vecColor=STABMODE==='water'?'rgba(100,255,180,0.6)':'rgba(255,255,0,0.6)';
+  ctx.strokeStyle=vecColor; ctx.lineWidth=1.3; ctx.setLineDash([5,4]);
   ctx.beginPath(); ctx.moveTo(tx0s,ty0s); ctx.lineTo(tvex,tvey); ctx.stroke();
   ctx.setLineDash([]);
 
@@ -639,25 +722,25 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
   ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(ovex,ovey); ctx.stroke();
   ctx.setLineDash([]);
 
-  // OS heading line / linea de fe (solid, fixed to true HDG / gyro compass, water track)
-  // Va del centro hasta el borde del radar, como en un radar real. Se puede ocultar
-  // con el boton "LINEA DE FE" para no tapar blancos cercanos al rumbo propio.
+  // OS heading line (solid, fixed to true HDG / gyro compass, water track)
+  const osr=d2r(oshdg);
   if(SHOWHEADLINE){
-    const osr=d2r(oshdg);
-    const rr=RNG*PX;
-    const hlLenO=[CX+Math.sin(osr)*rr, CY-Math.cos(osr)*rr];
-    ctx.strokeStyle='#00ff55'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
+  const rr2=RNG*PX;
+  const hlLenO2=[CX+Math.sin(osr)*rr2,CY-Math.cos(osr)*rr2];
+  ctx.strokeStyle='#00ff41'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO2[0],hlLenO2[1]); ctx.stroke();
   }
+  const hlLenO=[CX+Math.sin(osr)*RNG*PX*0.18, CY-Math.cos(osr)*RNG*PX*0.18];
+  ctx.strokeStyle='#00ff41'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
 
   // OS dot (triangle ship, bow points to true heading oshdg)
-  const osr=d2r(oshdg);
   function rot(px,py){return [CX+px*Math.cos(osr)-py*Math.sin(osr), CY+px*Math.sin(osr)+py*Math.cos(osr)];}
-  ctx.fillStyle='#00ff55';
+  ctx.fillStyle='#00ff41';
   ctx.beginPath();
   const [p1x,p1y]=rot(0,-9), [p2x,p2y]=rot(-5,5), [p3x,p3y]=rot(5,5);
   ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.lineTo(p3x,p3y); ctx.closePath(); ctx.fill();
-  txt(CX-7,CY+16,'OS','bold 9px Courier New','#00ff55');
+  txt(CX-7,CY+16,SOURCE==='live'?'OS ▶VIVO':'OS','bold 9px Courier New','#00ff41');
 
   // compass labels (rotate position with the picture, text stays upright)
   txt(CX-4,12,'N','bold 10px Courier New','#2a6a3a');
@@ -677,7 +760,7 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
 
   // legend bottom left
   const leg=[
-    {col:'#00ff55',lbl:'OS — propio'},
+    {col:'#00ff41',lbl:'OS — propio'},
     {col:'#ffff00',lbl:'TGT — blanco'},
     {col:'#ffff00',lbl:'━ HDG (aguja)'},
     {col:'#ffff00',lbl:'┄ COG/SOG (deriva)'},
