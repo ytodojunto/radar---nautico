@@ -6,67 +6,67 @@
 <title>Radar — CPA / TCPA / BCR / BCT — Escuela Nacional Fluvial</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff41;overflow:hidden}
+html,body{width:100%;height:100%;background:#000;font-family:'Courier New',monospace;color:#00ff55;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh;width:100vw}
-.top-bar{background:#050f05;border-bottom:1px solid #1a4a1a;padding:3px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.brand{color:#00ff41;font-size:16px;font-weight:bold;letter-spacing:3px}
-.top-info{display:flex;gap:16px;font-size:12px;color:#336633}
+.top-bar{background:#050f05;border-bottom:1px solid #226622;padding:2px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{color:#00ff55;font-size:16px;font-weight:bold;letter-spacing:3px}
+.top-info{display:flex;gap:16px;font-size:12px;color:#44aa44}
 .top-info span{color:#00cc33}
 .clock{color:#ffff00;font-size:15px;font-weight:bold}
 .main{display:flex;flex:1;overflow:hidden}
 .left{display:flex;flex-direction:column;flex:1;overflow:hidden}
-.sc-bar{background:#030d03;border-bottom:1px solid #0f2a0f;padding:3px 8px;display:flex;gap:5px;align-items:center;flex-shrink:0}
-.sc-bar label{font-size:11px;color:#336633;margin-right:4px}
-.sc{padding:2px 9px;font-size:11px;font-family:'Courier New',monospace;border:1px solid #1a3a1a;background:#000;color:#336633;cursor:pointer;letter-spacing:.5px;transition:all .15s;border-radius:2px}
-.sc:hover{border-color:#00ff41;color:#00ff41}
-.sc.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+.sc-bar{background:#030d03;border-bottom:1px solid #1a441a;padding:2px 8px;display:flex;gap:4px;align-items:center;flex-shrink:0}
+.sc-bar label{font-size:11px;color:#44aa44;margin-right:4px}
+.sc{padding:2px 9px;font-size:11px;font-family:'Courier New',monospace;border:1px solid #1a3a1a;background:#000;color:#44aa44;cursor:pointer;letter-spacing:.5px;transition:all .15s;border-radius:2px}
+.sc:hover{border-color:#00ff55;color:#00ff55}
+.sc.on{background:#0a2a0a;border-color:#00ff55;color:#00ff55;font-weight:bold}
 .radar-wrap{flex:1;position:relative;background:#000;overflow:hidden}
 canvas{display:block}
-.controls{background:#030d03;border-top:1px solid #0f2a0f;padding:4px 8px;display:grid;grid-template-columns:repeat(6,1fr) auto;gap:6px 8px;align-items:center;flex-shrink:0}
+.controls{background:#030d03;border-top:1px solid #1a441a;padding:4px 8px;display:grid;grid-template-columns:repeat(6,1fr) auto;gap:6px 8px;align-items:center;flex-shrink:0}
 .sl{display:flex;flex-direction:column;gap:1px}
-.sl-lbl{display:flex;justify-content:space-between;font-size:11px;color:#336633}
+.sl-lbl{display:flex;justify-content:space-between;font-size:11px;color:#44aa44}
 .sl-lbl span{color:#ffff00;font-weight:bold}
-.sl input[type=range]{width:100%;height:12px;accent-color:#00ff41;cursor:pointer}
+.sl input[type=range]{width:100%;height:12px;accent-color:#00ff55;cursor:pointer}
 .mode-col{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center}
-.mode-btn{padding:4px 10px;font-size:11px;font-family:'Courier New',monospace;border:1px solid #336633;background:#000;color:#336633;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
+.mode-btn{padding:4px 10px;font-size:11px;font-family:'Courier New',monospace;border:1px solid #44aa44;background:#000;color:#44aa44;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
 .mode-btn:hover{border-color:#ffff00;color:#ffff00}
 .mode-btn.on{background:#1a1a00;border-color:#ffff00;color:#ffff00;font-weight:bold}
-.sidebar{width:200px;background:#050f05;border-left:1px solid #1a4a1a;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
-.tgt-block{border-bottom:1px solid #0f2a0f;padding:5px 8px;flex-shrink:0}
+.sidebar{width:200px;background:#050f05;border-left:1px solid #226622;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.tgt-block{border-bottom:1px solid #1a441a;padding:5px 8px;flex-shrink:0}
 .tgt-label{color:#00ccff;font-size:12px;font-weight:bold;letter-spacing:1px;margin-bottom:2px}
 .tgt-name{color:#ffff00;font-size:14px;font-weight:bold;margin-bottom:5px}
 .tgt-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:3px}
-.tgt-row .lbl{color:#336633}
-.tgt-row .val{color:#00ff41;font-weight:bold;font-size:15px}
+.tgt-row .lbl{color:#44aa44}
+.tgt-row .val{color:#00ff55;font-weight:bold;font-size:15px}
 .tgt-row .val.danger{color:#ff3333}
 .tgt-row .val.warn{color:#ffaa00}
 .tgt-row .val.ok{color:#44ff88}
 .metrics{padding:5px 8px;flex-shrink:0}
 .m-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-.mc{background:#030d03;border:1px solid #0f2a0f;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
-.mc:hover{border-color:#336633}
-.mc.sel{border-color:#00ff41}
-.mc .mk{font-size:11px;color:#336633;letter-spacing:.5px}
+.mc{background:#030d03;border:1px solid #1a441a;border-radius:2px;padding:4px 5px;cursor:pointer;transition:border-color .15s}
+.mc:hover{border-color:#44aa44}
+.mc.sel{border-color:#00ff55}
+.mc .mk{font-size:11px;color:#44aa44;letter-spacing:.5px}
 .mc .mv{font-size:24px;font-weight:bold;line-height:1;margin:1px 0}
-.mc .mu{font-size:11px;color:#336633}
-.mc .mdef{font-size:10px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #0f2a0f;display:none}
+.mc .mu{font-size:11px;color:#44aa44}
+.mc .mdef{font-size:10px;color:#558855;line-height:1.3;margin-top:3px;padding-top:3px;border-top:1px solid #1a441a;display:none}
 .mc.sel .mdef{display:block}
 .cpa-c{color:#ff3333}.tcpa-c{color:#44aaff}.bcr-c{color:#44ff88}.bct-c{color:#ffaa00}
-.alert-section{flex-shrink:0;padding:5px 8px;border-top:1px solid #0f2a0f}
-.alert-lbl{font-size:10px;color:#336633;margin-bottom:3px;letter-spacing:.5px}
+.alert-section{flex-shrink:0;padding:5px 8px;border-top:1px solid #1a441a}
+.alert-lbl{font-size:10px;color:#44aa44;margin-bottom:3px;letter-spacing:.5px}
 .alert-box{border-radius:2px;padding:4px 7px;font-size:11px;font-weight:bold;letter-spacing:.3px;line-height:1.4;min-height:28px;transition:all .3s;cursor:pointer;position:relative}
 .alert-box .reveal-hint{font-size:10px;font-weight:normal;opacity:.7;margin-top:2px}
-.ab-hidden{background:#0a0a0a;border:1px dashed #336633;color:#336633}
+.ab-hidden{background:#0a0a0a;border:1px dashed #44aa44;color:#44aa44}
 .ab-danger{background:#2a0000;border:1px solid #ff3333;color:#ff3333}
 .ab-warn{background:#1a1000;border:1px solid #ffaa00;color:#ffaa00}
 .ab-ok{background:#001a06;border:1px solid #44ff88;color:#44ff88}
-.cfg{padding:5px 8px;font-size:10px;color:#1a4a1a;border-top:1px solid #0f2a0f;flex-shrink:0}
-.cfg span{color:#00ff41;display:block;margin-bottom:1px}
+.cfg{padding:5px 8px;font-size:10px;color:#226622;border-top:1px solid #1a441a;flex-shrink:0}
+.cfg span{color:#00ff55;display:block;margin-bottom:1px}
 .rng-selector{display:flex;flex-direction:column;gap:1px}
 .rng-btns{display:flex;gap:3px;flex-wrap:wrap}
-.rng-btn{padding:1px 6px;font-size:10px;font-family:'Courier New',monospace;border:1px solid #0f2a0f;background:#000;color:#336633;cursor:pointer;border-radius:1px}
-.rng-btn:hover{border-color:#00ff41;color:#00ff41}
-.rng-btn.on{background:#0a2a0a;border-color:#00ff41;color:#00ff41;font-weight:bold}
+.rng-btn{padding:1px 6px;font-size:10px;font-family:'Courier New',monospace;border:1px solid #1a441a;background:#000;color:#44aa44;cursor:pointer;border-radius:1px}
+.rng-btn:hover{border-color:#00ff55;color:#00ff55}
+.rng-btn.on{background:#0a2a0a;border-color:#00ff55;color:#00ff55;font-weight:bold}
 </style>
 </head>
 <body>
@@ -100,7 +100,7 @@ canvas{display:block}
         <button class="sc" onclick="sc('alcance')">Alcance</button>
         <button class="sc" onclick="sc('seguro')">Paso seguro</button>
       </div>
-      <div class="sc-bar" style="border-top:1px solid #0f2a0f">
+      <div class="sc-bar" style="border-top:1px solid #1a441a">
         <label>ORIENTACION:</label>
         <button class="sc ori-btn on" id="ori-north" onclick="setOri('north')">NORTH UP</button>
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
@@ -109,7 +109,7 @@ canvas{display:block}
         <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
         <button class="sc on" id="stab-toggle" onclick="toggleStab()" style="margin-left:6px;background:#0a1a0a;border-color:#00cc44">REF: AGUA</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
-          <label style="font-size:11px;color:#336633">RANGO:</label>
+          <label style="font-size:11px;color:#44aa44">RANGO:</label>
           <div class="rng-btns" id="rng-btns">
             <button class="rng-btn" onclick="setRng(0.5)">0.5</button>
             <button class="rng-btn" onclick="setRng(1)">1</button>
@@ -121,11 +121,11 @@ canvas{display:block}
             <button class="rng-btn" onclick="setRng(16)">16</button>
             <button class="rng-btn" onclick="setRng(24)">24</button>
           </div>
-          <span style="font-size:10px;color:#336633">NM</span>
+          <span style="font-size:10px;color:#44aa44">NM</span>
         </div>
       </div>
-      <div class="sc-bar" style="border-top:1px solid #0f2a0f">
-        <label style="font-size:11px;color:#336633">VECTOR (min):</label>
+      <div class="sc-bar" style="border-top:1px solid #1a441a">
+        <label style="font-size:11px;color:#44aa44">VECTOR (min):</label>
         <div class="rng-btns" id="vec-btns">
           <button class="rng-btn" onclick="setVec(3)">3</button>
           <button class="rng-btn on" id="vbtn6" onclick="setVec(6)">6</button>
@@ -134,7 +134,7 @@ canvas{display:block}
           <button class="rng-btn" onclick="setVec(20)">20</button>
           <button class="rng-btn" onclick="setVec(30)">30</button>
         </div>
-        <span style="font-size:10px;color:#336633">min — proyección del vector COG/SOG y ARPA</span>
+        <span style="font-size:10px;color:#44aa44">min — proyección del vector COG/SOG y ARPA</span>
       </div>
 
 
@@ -172,7 +172,7 @@ canvas{display:block}
           <button class="mode-btn" id="btn-ejercicio" onclick="setMode('ejercicio')">EJERCICIO</button>
         </div>
       </div>
-      <div class="controls" style="grid-template-columns:1fr 1fr auto;border-top:1px solid #0f2a0f">
+      <div class="controls" style="grid-template-columns:1fr 1fr auto;border-top:1px solid #1a441a">
         <div class="sl">
           <div class="sl-lbl">Dirección corriente <span id="vcurdir">000°</span></div>
           <input type="range" id="curdir" min="0" max="359" step="1" value="0" oninput="upd()">
@@ -181,7 +181,7 @@ canvas{display:block}
           <div class="sl-lbl">Veloc. corriente <span id="vcurspd">0.0 kn</span></div>
           <input type="range" id="curspd" min="0" max="3" step="0.1" value="0" oninput="upd()">
         </div>
-        <div style="font-size:10px;color:#336633;line-height:1.4;max-width:170px">
+        <div style="font-size:10px;color:#44aa44;line-height:1.4;max-width:170px">
           Heading line (━) = rumbo de aguja.<br>Vector COG/SOG (┄) = rumbo real sobre el fondo, con deriva.
         </div>
       </div>
@@ -214,7 +214,7 @@ canvas{display:block}
       </div>
 
       <div class="metrics">
-        <div style="font-size:10px;color:#336633;margin-bottom:3px;letter-spacing:.5px">TOQUE PARA DEFINICION</div>
+        <div style="font-size:10px;color:#44aa44;margin-bottom:3px;letter-spacing:.5px">TOQUE PARA DEFINICION</div>
         <div class="m-grid">
           <div class="mc sel" id="mc-cpa" onclick="selM('cpa')">
             <div class="mk">CPA</div>
@@ -315,7 +315,7 @@ function toggleStab(){
   const isWater = STABMODE==='water';
   btn.textContent = 'REF: '+(isWater?'AGUA':'FONDO');
   btn.style.borderColor = isWater ? '#00cc44' : '#ffaa00';
-  btn.style.color = isWater ? '#00ff41' : '#ffaa00';
+  btn.style.color = isWater ? '#00ff55' : '#ffaa00';
   btn.style.background = isWater ? '#0a1a0a' : '#1a1000';
   upd();
 }
@@ -647,18 +647,18 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     const osr=d2r(oshdg);
     const rr=RNG*PX;
     const hlLenO=[CX+Math.sin(osr)*rr, CY-Math.cos(osr)*rr];
-    ctx.strokeStyle='#00ff41'; ctx.lineWidth=1;
+    ctx.strokeStyle='#00ff55'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(CX,CY); ctx.lineTo(hlLenO[0],hlLenO[1]); ctx.stroke();
   }
 
   // OS dot (triangle ship, bow points to true heading oshdg)
   const osr=d2r(oshdg);
   function rot(px,py){return [CX+px*Math.cos(osr)-py*Math.sin(osr), CY+px*Math.sin(osr)+py*Math.cos(osr)];}
-  ctx.fillStyle='#00ff41';
+  ctx.fillStyle='#00ff55';
   ctx.beginPath();
   const [p1x,p1y]=rot(0,-9), [p2x,p2y]=rot(-5,5), [p3x,p3y]=rot(5,5);
   ctx.moveTo(p1x,p1y); ctx.lineTo(p2x,p2y); ctx.lineTo(p3x,p3y); ctx.closePath(); ctx.fill();
-  txt(CX-7,CY+16,'OS','bold 9px Courier New','#00ff41');
+  txt(CX-7,CY+16,'OS','bold 9px Courier New','#00ff55');
 
   // compass labels (rotate position with the picture, text stays upright)
   txt(CX-4,12,'N','bold 10px Courier New','#2a6a3a');
@@ -678,7 +678,7 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
 
   // legend bottom left
   const leg=[
-    {col:'#00ff41',lbl:'OS — propio'},
+    {col:'#00ff55',lbl:'OS — propio'},
     {col:'#ffff00',lbl:'TGT — blanco'},
     {col:'#ffff00',lbl:'━ HDG (aguja)'},
     {col:'#ffff00',lbl:'┄ COG/SOG (deriva)'},
