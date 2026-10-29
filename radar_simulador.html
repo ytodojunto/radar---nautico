@@ -672,7 +672,7 @@ function imprimirA4(){
   const lbl=document.getElementById('tgt-label').textContent;
   const p=new URLSearchParams({
     hdg:gv('hdg'), spd:gv('spd'), brg:gv('brg'), dst:gv('dst'),
-    ospd:gv('ospd'), oshdg:gv('oshdg'), curdir:gv('curdir'), curspd:gv('curspd'),
+    ospd:gv('ospd'), oshdg:gv('oshdg'), curdir:gv('curdir'), curspd:gv('curspd'), ori:ORI,
     name:document.getElementById('tgt-name').textContent,
     mmsi:(lbl.split('MMSI ')[1]||'—').trim(),
     lbl:lbl.split(' — ')[0].trim(),

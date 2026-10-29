@@ -268,7 +268,7 @@ body { margin: 0; }
       <div class="topbar">
         <div class="rangebox" id="rangeTxt">6 NM</div>
         <span class="btn dd">RM(T)</span>
-        <span class="btn dd stab"><small>STAB</small>H UP</span>
+        <span class="btn dd stab"><small>STAB</small><span id="oriLbl">N UP</span></span>
         <span class="btn dd">Sea</span>
       </div>
       <div class="ctl-row">
@@ -419,6 +419,9 @@ body { margin: 0; }
   // </compute>
 
   var K = solve(SC);
+  var ORI = q.get('ori') || 'north';
+  var ROT = ORI === 'head' ? SC.own.hdg : (ORI === 'course' ? K.cog : 0);
+  var ORI_TXT = ORI === 'head' ? 'H UP' : (ORI === 'course' ? 'C UP' : 'N UP');
 
   var RANGES = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24];
   var VT = [1, 3, 6, 10, 15, 20, 30];
@@ -428,7 +431,7 @@ body { margin: 0; }
   // La escala del simulador es el punto de partida; se sube hasta que el blanco quede dentro del círculo.
   function fits(ri) {
     var r = RANGES[ri];
-    var rb = SC.tgt.brg - SC.own.hdg;
+    var rb = SC.tgt.brg - ROT;
     var e = SC.tgt.rng * Math.sin(rb * D2R) / r, n = SC.tgt.rng * Math.cos(rb * D2R) / r;
     return Math.hypot(e, (S.off ? 0.55 : 0) - n) <= 0.9;
   }
@@ -460,7 +463,8 @@ body { margin: 0; }
     var ox = cx, oy = cy + (S.off ? 0.55 : 0) * R;
     var range = RANGES[S.ri];
     var ppn = R / range;
-    var hdg = SC.own.hdg;
+    var ownh = SC.own.hdg;
+    var hdg = ROT;
     var vt = VT[S.vi];
     var ff = getComputedStyle(document.body).fontFamily;
     var seed = 11;
@@ -493,7 +497,8 @@ body { margin: 0; }
       }
     }
     ctx.fillStyle = '#ff2a2a';
-    ctx.beginPath(); ctx.arc(cx, cy - R, 4.5, 0, Math.PI * 2); ctx.fill();
+    var ma = (ownh - hdg) * D2R;
+    ctx.beginPath(); ctx.arc(cx + R * Math.sin(ma), cy - R * Math.cos(ma), 4.5, 0, Math.PI * 2); ctx.fill();
 
     ctx.save();
     ctx.beginPath(); ctx.arc(cx, cy, R - 0.5, 0, Math.PI * 2); ctx.clip();
@@ -512,7 +517,7 @@ body { margin: 0; }
     }
 
     ctx.strokeStyle = '#f2f2f4'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(cx, cy - R); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + 2 * R * Math.sin(ma), oy - 2 * R * Math.cos(ma)); ctx.stroke();
 
     var oe = K.ownG[0] * vt / 60, on = K.ownG[1] * vt / 60;
     var ov = toS(oe, on);
@@ -554,7 +559,7 @@ body { margin: 0; }
     ctx.font = '10px ' + ff;
     ctx.fillText('1', T[0] + 15, T[1] + 8);
 
-    ctx.save(); ctx.translate(ox, oy);
+    ctx.save(); ctx.translate(ox, oy); ctx.rotate(ma);
     ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
     ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
     ctx.setLineDash([]);
@@ -589,6 +594,7 @@ body { margin: 0; }
 
   function fill() {
     $('ttlName').textContent = SC.tgt.name;
+    $('oriLbl').textContent = ORI_TXT;
     $('o-hdg').textContent = pad(SC.own.hdg, 3, 0);
     $('o-stw').textContent = SC.own.stw.toFixed(1);
     $('o-cog').textContent = K.cog.toFixed(1);
