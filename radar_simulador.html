@@ -93,7 +93,7 @@ canvas{display:block}
     <div class="left">
       <div class="sc-bar">
         <label>ESCENARIO:</label>
-        <button class="sc on" onclick="sc('maersk')">MAERSK LABERINTO</button>
+        <button class="sc on" onclick="sc('maersk')">WESTGATE</button>
         <button class="sc" onclick="sc('ladyj')">LADY J</button>
         <button class="sc" onclick="sc('cruce')">Cruce peligroso</button>
         <button class="sc" onclick="sc('frente')">Frente a frente</button>
@@ -201,7 +201,7 @@ canvas{display:block}
 
       <div class="tgt-block">
         <div class="tgt-label" id="tgt-label">AIS C — MMSI 219542000</div>
-        <div class="tgt-name" id="tgt-name">MAERSK LABERINTO</div>
+        <div class="tgt-name" id="tgt-name">WESTGATE</div>
         <div class="tgt-row"><span class="lbl">BRG</span><span class="val" id="si-brg">060°R</span></div>
         <div class="tgt-row"><span class="lbl">RNG</span><span class="val" id="si-rng">3.000 NM</span></div>
         <div class="tgt-row"><span class="lbl">STW</span><span class="val" id="si-stw">11 kn</span></div>
@@ -275,7 +275,7 @@ function gv(id){return +document.getElementById(id).value}
 function sv(id,v){document.getElementById(id).value=v}
 
 const SCEN={
-  maersk:{hdg:100,spd:11,brg:60,dst:3,ospd:10,oshdg:0,curdir:0,curspd:0,name:'MAERSK LABERINTO',mmsi:'219542000',lbl:'AIS C'},
+  maersk:{hdg:100,spd:11,brg:60,dst:3,ospd:10,oshdg:0,curdir:0,curspd:0,name:'WESTGATE',mmsi:'219542000',lbl:'AIS C'},
   ladyj:{hdg:137,spd:12,brg:1,dst:4.4,ospd:10,oshdg:0,curdir:0,curspd:0,name:'LADY J',mmsi:'636022859',lbl:'AIS A'},
   cruce:{hdg:260,spd:14,brg:50,dst:5,ospd:12,oshdg:0,curdir:0,curspd:0,name:'BLANCO TGT-01',mmsi:'—',lbl:'TT MAN'},
   frente:{hdg:178,spd:14,brg:2,dst:7,ospd:10,oshdg:0,curdir:0,curspd:0,name:'BLANCO TGT-02',mmsi:'—',lbl:'TT MAN'},
