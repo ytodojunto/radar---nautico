@@ -169,6 +169,7 @@ canvas{display:block}
         <div class="mode-col">
           <button class="mode-btn on" id="btn-normal" onclick="setMode('normal')">NORMAL</button>
           <button class="mode-btn" id="btn-ejercicio" onclick="setMode('ejercicio')">EJERCICIO</button>
+          <button class="mode-btn" id="btn-imprimir" onclick="imprimirA4()" title="Genera la hoja A4 con el escenario actual">IMPRIMIR A4</button>
         </div>
       </div>
       <div class="controls" style="grid-template-columns:1fr 1fr auto;border-top:1px solid #0f2a0f">
@@ -664,6 +665,20 @@ function drawRadar(tx,ty,rvx,rvy,ovx,ovy,tvx,tvy,tcpa,cpa,bcr,bct,hdg,oshdg,ohx,
     lx+=ctx.measureText(l.lbl).width+18;
     if(lx>cv.width-100){lx=8;ly-=12;}
   });
+}
+
+// Abre la hoja A4 (hoja_a4.html) con los valores actuales de los controles y lanza la impresión.
+function imprimirA4(){
+  const lbl=document.getElementById('tgt-label').textContent;
+  const p=new URLSearchParams({
+    hdg:gv('hdg'), spd:gv('spd'), brg:gv('brg'), dst:gv('dst'),
+    ospd:gv('ospd'), oshdg:gv('oshdg'), curdir:gv('curdir'), curspd:gv('curspd'),
+    name:document.getElementById('tgt-name').textContent,
+    mmsi:(lbl.split('MMSI ')[1]||'—').trim(),
+    lbl:lbl.split(' — ')[0].trim(),
+    rng:RNG, vec:VECMIN, auto:1
+  });
+  window.open('hoja_a4.html?'+p.toString(),'_blank');
 }
 
 function tick(){
