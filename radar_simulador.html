@@ -106,6 +106,7 @@ canvas{display:block}
         <button class="sc ori-btn" id="ori-course" onclick="setOri('course')">COURSE UP</button>
         <button class="sc ori-btn" id="ori-head" onclick="setOri('head')">HEAD UP</button>
         <button class="sc on" id="arpa-toggle" onclick="toggleArpa()" style="margin-left:14px">VECTOR ARPA: ON</button>
+        <button class="sc" id="band-toggle" onclick="toggleBand()" style="margin-left:6px" title="Simula la banda del radar (se imprime en la hoja A4)">BANDA: X-BAND</button>
         <button class="sc on" id="headline-toggle" onclick="toggleHeadline()" style="margin-left:6px">LINEA DE FE: ON</button>
         <div style="margin-left:auto;display:flex;align-items:center;gap:4px">
           <label style="font-size:9px;color:#336633">RANGO:</label>
@@ -291,6 +292,14 @@ function sc(name){
   document.getElementById('tgt-name').textContent=s.name;
   revealed=false;
   upd();
+}
+
+let BAND='x';
+function toggleBand(){
+  BAND=BAND==='x'?'s':'x';
+  const b=document.getElementById('band-toggle');
+  b.textContent='BANDA: '+(BAND==='x'?'X-BAND':'S-BAND');
+  b.classList.toggle('on',BAND==='s');
 }
 
 function toggleArpa(){
@@ -672,7 +681,7 @@ function imprimirA4(){
   const lbl=document.getElementById('tgt-label').textContent;
   const p=new URLSearchParams({
     hdg:gv('hdg'), spd:gv('spd'), brg:gv('brg'), dst:gv('dst'),
-    ospd:gv('ospd'), oshdg:gv('oshdg'), curdir:gv('curdir'), curspd:gv('curspd'), ori:ORI,
+    ospd:gv('ospd'), oshdg:gv('oshdg'), curdir:gv('curdir'), curspd:gv('curspd'), ori:ORI, band:BAND,
     name:document.getElementById('tgt-name').textContent,
     mmsi:(lbl.split('MMSI ')[1]||'—').trim(),
     lbl:lbl.split(' — ')[0].trim(),

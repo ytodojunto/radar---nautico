@@ -288,7 +288,7 @@ body { margin: 0; }
       <div class="trcol">
         <span class="btn">&#9788; DISP Brightness</span>
         <div class="xrow"><span class="xl">Transmit</span><span class="btn">MP1</span></div>
-        <span class="btn xb">X-BAND</span>
+        <span class="btn xb" id="bandLbl">X-BAND</span>
         <span class="btn xr">X-RADA&hellip;<br>Master</span>
       </div>
     </div>
@@ -427,7 +427,7 @@ body { margin: 0; }
   var VT = [1, 3, 6, 10, 15, 20, 30];
   function nearest(arr, v) { var bi = 0; arr.forEach(function (x, i) { if (Math.abs(x - v) < Math.abs(arr[bi] - v)) bi = i; }); return bi; }
   function ringStep(range) { var c = [0.05, 0.1, 0.25, 0.5, 1, 2, 4]; for (var i = 0; i < c.length; i++) if (range / c[i] <= 6) return c[i]; return 4; }
-  var S = { ri: nearest(RANGES, num('rng', 6)), rings: false, off: true, vi: nearest(VT, num('vec', 6)) };
+  var S = { ri: nearest(RANGES, num('rng', 6)), rings: false, off: num('off', 0) === 1, vi: nearest(VT, num('vec', 6)) };
   // La escala del simulador es el punto de partida; se sube hasta que el blanco quede dentro del círculo.
   function fits(ri) {
     var r = RANGES[ri];
@@ -595,6 +595,7 @@ body { margin: 0; }
   function fill() {
     $('ttlName').textContent = SC.tgt.name;
     $('oriLbl').textContent = ORI_TXT;
+    $('bandLbl').textContent = (q.get('band') === 's') ? 'S-BAND' : 'X-BAND';
     $('o-hdg').textContent = pad(SC.own.hdg, 3, 0);
     $('o-stw').textContent = SC.own.stw.toFixed(1);
     $('o-cog').textContent = K.cog.toFixed(1);
