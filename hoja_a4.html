@@ -392,7 +392,7 @@ body { margin: 0; }
     var og = [ow[0] + c[0], ow[1] + c[1]];
     var tw = polar(sc.tgt.stw, sc.tgt.hdg);
     var tg = [tw[0] + c[0], tw[1] + c[1]];
-    var tb = (sc.own.hdg + sc.tgt.brg) % 360;
+    var tb = sc.tgt.brg % 360; // igual que el simulador: la demora se toma sobre el norte (como en el simulador)
     var P = polar(sc.tgt.rng, tb);
     var V = [tg[0] - og[0], tg[1] - og[1]];
     var v2 = V[0] * V[0] + V[1] * V[1];
@@ -428,7 +428,8 @@ body { margin: 0; }
   // La escala del simulador es el punto de partida; se sube hasta que el blanco quede dentro del círculo.
   function fits(ri) {
     var r = RANGES[ri];
-    var e = SC.tgt.rng * Math.sin(SC.tgt.brg * D2R) / r, n = SC.tgt.rng * Math.cos(SC.tgt.brg * D2R) / r;
+    var rb = SC.tgt.brg - SC.own.hdg;
+    var e = SC.tgt.rng * Math.sin(rb * D2R) / r, n = SC.tgt.rng * Math.cos(rb * D2R) / r;
     return Math.hypot(e, (S.off ? 0.55 : 0) - n) <= 0.9;
   }
   while (S.ri < RANGES.length - 1 && !fits(S.ri)) S.ri++;
